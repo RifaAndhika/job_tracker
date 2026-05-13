@@ -2,7 +2,7 @@ import { prisma } from "../../config/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-export const registrasiUser = async (
+export const registerUser = async (
   name: string,
   email: string,
   password: string,

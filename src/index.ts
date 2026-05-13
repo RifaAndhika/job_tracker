@@ -4,8 +4,8 @@ import dotenv from "dotenv";
 import { prisma } from "./config/prisma";
 import authRoute from "./modules/auth/auth.route";
 import jobRoute from "./modules/job/job.route";
-import { authMiddlerware } from "./middleware/auth.middleware";
-
+import { authMiddleware } from "./middleware/auth.middleware";
+import { errorMiddleware } from "./middleware/error.middleware";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,8 +21,9 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoute);
 app.use("/api/jobs", jobRoute);
+app.use(errorMiddleware);
 
-app.get("/protected", authMiddlerware, (req: any, res) => {
+app.get("/protected", authMiddleware, (req: any, res) => {
   res.json({
     message: "This is a protected route",
   });

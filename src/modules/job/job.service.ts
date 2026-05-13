@@ -1,8 +1,6 @@
-import express from "express";
-import { Request, Response } from "express";
 import prisma from "../../config/prisma";
 
-export const createJob = async (userId: string, data: any) => {
+export const createJobService = async (userId: string, data: any) => {
   return prisma.jobApplication.create({
     data: {
       ...data,
