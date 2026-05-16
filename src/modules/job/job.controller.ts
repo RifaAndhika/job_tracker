@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Response, Request } from "express";
 import {
   createJobService,
   getJobService,
@@ -13,9 +13,10 @@ export const createJobHandler = async (req: any, res: Response) => {
   res.status(201).json(job);
 };
 
-export const getJobsHandler = async (req: any, res: Response) => {
-  const userId = req.user.userId;
-  const jobs = await getJobService(userId);
+export const getJobsHandler = async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+
+  const jobs = await getJobService(userId, req.validatedQuery);
   res.json(jobs);
 };
 

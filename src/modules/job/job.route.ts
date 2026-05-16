@@ -8,14 +8,16 @@ import {
 } from "./job.controller";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import { validate } from "../../middleware/validation.middleware";
-import { createJobSchema } from "./job.validation";
+import { validateQueryJob } from "./job.validation";
+import { createJobSchema } from "./job.schema.validation";
+import { jobQuerySchema } from "./job.schema.validation";
 
 const router = Router();
 
 router.use(authMiddleware);
 
 router.post("/create", createJobHandler, validate(createJobSchema));
-router.get("/get", getJobsHandler);
+router.get("/get", validateQueryJob(jobQuerySchema), getJobsHandler);
 router.get("/:id", getJobByIdHandler);
 router.put("/:id", updateJobHandler, validate(createJobSchema));
 router.delete("/:id", deleteJobHandler);

@@ -9,15 +9,50 @@ export const createJobService = async (userId: string, data: any) => {
   });
 };
 
-export const getJobService = async (userId: string) => {
-  return prisma.jobApplication.findMany({
+export const getJobService = async (userId: string, query: any) => {
+  const { status, search, page, limit } = query;
+  const skip = (page - 1) * limit;
+  const jobs = await prisma.jobApplication.findMany({
     where: {
       userId,
+      ...(status && { status }),
+      ...(search && {
+        OR: [
+          { companyName: { contains: search, mode: "insensitive" } },
+          { position: { contains: search, mode: "insensitive" } },
+        ],
+      }),
     },
     orderBy: {
       createdAt: "desc",
     },
+    skip,
+    take: limit,
   });
+  const total = await prisma.jobApplication.count({
+    where: {
+      userId,
+      ...(status && { status }),
+      ...(search && {
+        OR: [
+          { companyName: { contains: search, mode: "insensitive" } },
+          { position: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+    },
+  });
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    data: jobs,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
 };
 
 export const getJobByIdService = async (jobId: string, userId: string) => {
