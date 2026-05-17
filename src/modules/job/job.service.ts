@@ -1,15 +1,24 @@
 import prisma from "../../config/prisma";
+import { JobQueryType, CreateJobInput } from "./job.schema.validation";
 
-export const createJobService = async (userId: string, data: any) => {
+export const createJobService = async (
+  userId: string,
+  data: CreateJobInput,
+) => {
   return prisma.jobApplication.create({
     data: {
-      ...data,
       userId,
+      companyName: data.companyName,
+      position: data.position,
+      status: data.status,
+      appliedDate: data.appliedDate,
+      ...(data.source !== undefined && { source: data.source }),
+      ...(data.notes !== undefined && { notes: data.notes }),
     },
   });
 };
 
-export const getJobService = async (userId: string, query: any) => {
+export const getJobService = async (userId: string, query: JobQueryType) => {
   const { status, search, page, limit } = query;
   const skip = (page - 1) * limit;
   const jobs = await prisma.jobApplication.findMany({

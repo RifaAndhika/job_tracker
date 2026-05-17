@@ -16,14 +16,15 @@ export const registerUser = async (
   if (exitingUser) {
     throw new Error("User  already exists");
   }
-
-  return await prisma.user.create({
+  const { password: _, ...safeUser } = await prisma.user.create({
     data: {
       name,
       email,
       password: await bcrypt.hash(password, 3),
     },
   });
+
+  return safeUser;
 };
 
 export const loginUser = async (email: string, password: string) => {

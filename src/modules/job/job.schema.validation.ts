@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 export const createJobSchema = z.object({
-  companyName: z.string().min(1, "Company name is required"),
+  companyName: z.string().min(1),
 
-  position: z.string().min(1, "Position is required"),
+  position: z.string().min(1),
 
   status: z.enum([
     "APPLIED",
@@ -14,14 +14,18 @@ export const createJobSchema = z.object({
     "ACCEPTED",
   ]),
 
-  appliedDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: "Invalid date format",
-  }),
+  appliedDate: z.coerce.date(),
+
   source: z.string().optional(),
+
   notes: z.string().optional(),
 });
+export type CreateJobInput = z.infer<typeof createJobSchema>;
+
+export type JobQueryType = z.infer<typeof jobQuerySchema>;
 
 export const jobQuerySchema = z.object({
+  id: z.string().min(1).optional(),
   status: z
     .enum([
       "APPLIED",

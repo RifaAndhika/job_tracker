@@ -1,12 +1,12 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+import env from "./config/env";
 import { prisma } from "./config/prisma";
 import authRoute from "./modules/auth/auth.route";
 import jobRoute from "./modules/job/job.route";
 import { authMiddleware } from "./middleware/auth.middleware";
 import { errorMiddleware } from "./middleware/error.middleware";
-dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
