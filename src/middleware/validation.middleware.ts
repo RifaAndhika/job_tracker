@@ -6,10 +6,3 @@ export const validate =
     schema.parse(req.body);
     next();
   };
-
-export const validateQueryJob =
-  (schema: ZodObject) => (req: Request, res: Response, next: NextFunction) => {
-    const validatedQuery = schema.parse(req.query);
-    req.validatedQuery = validatedQuery;
-    next();
-  };

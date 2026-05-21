@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma";
-import { JobQueryType, CreateJobInput } from "./job.schema.validation";
+import { JobQueryType, CreateJobInput } from "./job.type";
 
 export const createJobService = async (
   userId: string,

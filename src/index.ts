@@ -4,6 +4,7 @@ import env from "./config/env";
 import { prisma } from "./config/prisma";
 import authRoute from "./modules/auth/auth.route";
 import jobRoute from "./modules/job/job.route";
+import dashboardRoute from "./modules/dashboard/dashboard.route";
 import { authMiddleware } from "./middleware/auth.middleware";
 import { errorMiddleware } from "./middleware/error.middleware";
 
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoute);
 app.use("/api/jobs", jobRoute);
+app.use("/api/dashboard", dashboardRoute);
 app.use(errorMiddleware);
 
 app.get("/protected", authMiddleware, (req: any, res) => {

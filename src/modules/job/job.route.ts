@@ -7,12 +7,10 @@ import {
   deleteJobHandler,
 } from "./job.controller";
 import { authMiddleware } from "../../middleware/auth.middleware";
-import {
-  validate,
-  validateQueryJob,
-} from "../../middleware/validation.middleware";
-import { createJobSchema } from "./job.schema.validation";
-import { jobQuerySchema } from "./job.schema.validation";
+import { validate } from "../../middleware/validation.middleware";
+import { validateQueryJob } from "../job/job.validation";
+import { createJobSchema } from "./job.type";
+import { jobQuerySchema } from "./job.type";
 
 const router = Router();
 
