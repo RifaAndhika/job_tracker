@@ -25,7 +25,6 @@ export type CreateJobInput = z.infer<typeof createJobSchema>;
 export type JobQueryType = z.infer<typeof jobQuerySchema>;
 
 export const jobQuerySchema = z.object({
-  id: z.string().min(1).optional(),
   status: z
     .enum([
       "APPLIED",
@@ -42,4 +41,8 @@ export const jobQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
 
   limit: z.coerce.number().min(1).max(50).default(10),
+
+  sort: z.enum(["asc", "desc"]).default("desc"),
+
+  sortBy: z.enum(["appliedDate"]).default("appliedDate"),
 });

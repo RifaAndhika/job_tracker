@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma";
-import { JobQueryType, CreateJobInput } from "./job.type";
+import { JobQueryType, CreateJobInput } from "./job.schema";
 
 export const createJobService = async (
   userId: string,
@@ -19,7 +19,7 @@ export const createJobService = async (
 };
 
 export const getJobService = async (userId: string, query: JobQueryType) => {
-  const { status, search, page, limit } = query;
+  const { status, search, page, limit, sort, sortBy } = query;
   const skip = (page - 1) * limit;
   const jobs = await prisma.jobApplication.findMany({
     where: {
@@ -32,8 +32,9 @@ export const getJobService = async (userId: string, query: JobQueryType) => {
         ],
       }),
     },
+
     orderBy: {
-      createdAt: "desc",
+      [sortBy]: sort,
     },
     skip,
     take: limit,

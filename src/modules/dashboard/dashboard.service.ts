@@ -56,29 +56,60 @@ export const totalApplicationsByStatusService = async (userid: string) => {
 };
 
 export const totalApplicationsMonthlyService = async (userid: string) => {
-  const grouped = await prisma.jobApplication.groupBy({
-    by: ["createdAt"],
+  const grouped = await prisma.$queryRaw<
+    {
+      month: Date;
+      count: number;
+    }[]
+  >`
+  SELECT
+  DATE_TRUNC('month', "appliedDate") AS month,
+  COUNT(*):: int AS count
+  FROM "JobApplication"
+  WHERE "userId" = ${userid}
+  GROUP BY month
+  ORDER BY month ASC
+  `;
+
+  return grouped.map((item) => ({
+    month: item.month.toISOString().slice(0, 7),
+    count: Number(item.count),
+  }));
+
+  return grouped;
+};
+
+export const getAcceptedRateService = async (userId: string) => {
+  const total = await prisma.jobApplication.count({
     where: {
-      userId: userid,
-    },
-    _count: {
-      createdAt: true,
+      userId: userId,
     },
   });
 
-  type analitycsMonth = {
-    total: 0;
-    date: Date;
-  };
-
-  const analitycsMonth: analitycsMonth = {
-    total: 0,
-    date: new Date(),
-  };
-
-  grouped.forEach((item) => {
-    analitycsMonth.total += item._count.createdAt;
-    analitycsMonth.date = item.createdAt;
+  const accepted = await prisma.jobApplication.count({
+    where: {
+      status: "ACCEPTED",
+      userId: userId,
+    },
   });
-  return analitycsMonth;
+
+  if (total === 0) return 0;
+  return Math.round((accepted / total) * 100);
+};
+
+export const getDashboardOverviewService = async (userId: string) => {
+  const [totalApplications, statusStats, monthlyStats, acceptedRate] =
+    await Promise.all([
+      totalApplicationsService(userId),
+      totalApplicationsByStatusService(userId),
+      totalApplicationsMonthlyService(userId),
+      getAcceptedRateService(userId),
+    ]);
+
+  return {
+    totalApplications,
+    statusStats,
+    monthlyStats,
+    acceptedRate,
+  };
 };

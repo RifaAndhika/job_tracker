@@ -9,8 +9,8 @@ import {
 import { authMiddleware } from "../../middleware/auth.middleware";
 import { validate } from "../../middleware/validation.middleware";
 import { validateQueryJob } from "../job/job.validation";
-import { createJobSchema } from "./job.type";
-import { jobQuerySchema } from "./job.type";
+import { createJobSchema } from "./job.schema";
+import { jobQuerySchema } from "./job.schema";
 
 const router = Router();
 
