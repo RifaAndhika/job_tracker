@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import env from "./config/env";
 import { prisma } from "./config/prisma";
+import { requestLogger } from "./middleware/requestLogger";
 import authRoute from "./modules/auth/auth.route";
 import jobRoute from "./modules/job/job.route";
 import dashboardRoute from "./modules/dashboard/dashboard.route";
@@ -13,6 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
 
 app.get("/", (req, res) => {
   res.json({
@@ -24,7 +26,6 @@ app.use("/api/auth", authRoute);
 app.use("/api/jobs", jobRoute);
 app.use("/api/dashboard", dashboardRoute);
 app.use(errorMiddleware);
-
 app.get("/protected", authMiddleware, (req: any, res) => {
   res.json({
     message: "This is a protected route",

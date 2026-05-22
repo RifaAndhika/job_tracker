@@ -15,7 +15,9 @@ export const requestLogger = (
       method: req.method,
       url: req.url,
       status: res.statusCode,
-      duration,
+      duration: `${duration}ms`,
     });
   });
+
+  next();
 };
