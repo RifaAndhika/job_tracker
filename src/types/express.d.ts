@@ -1,15 +1,10 @@
 import { JobQuery } from "../modules/job/job.schema";
-import { JwtPayload } from "jsonwebtoken";
+import { AuthPayload } from "./auth";
 
 declare global {
   namespace Express {
     interface Request {
-      user:
-        | JwtPayload
-        | (any & {
-            userId: string;
-          });
-
+      user: AuthPayload;
       validatedQuery: JobQuery;
     }
   }

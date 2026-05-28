@@ -1,20 +1,34 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-export const authMiddleware = (req: any, res: any, next: NextFunction) => {
+import { AuthPayload } from "../types/auth";
+
+export const authMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    return res.status(401).json({ error: "Authorization header missing" });
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new Error("Unauthorized");
   }
 
   const token = authHeader.split(" ")[1];
 
+  if (!token) {
+    throw new Error("token not found");
+  }
+
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as AuthPayload;
+
     req.user = decoded;
+
+    req.log = req.log.child({ userId: decoded.userId });
+
     next();
   } catch {
-    return res.status(401).json({ error: "Invalid token" });
+    throw new Error("token expired");
   }
 };

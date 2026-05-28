@@ -26,21 +26,6 @@ app.use("/api/auth", authRoute);
 app.use("/api/jobs", jobRoute);
 app.use("/api/dashboard", dashboardRoute);
 app.use(errorMiddleware);
-app.get("/protected", authMiddleware, (req: any, res) => {
-  res.json({
-    message: "This is a protected route",
-  });
-});
-
-app.get("/test-db", async (req, res) => {
-  try {
-    const users = await prisma.user.findMany();
-    res.json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
 
 app.use("/", (req, res) => {
   res.status(404).json({
