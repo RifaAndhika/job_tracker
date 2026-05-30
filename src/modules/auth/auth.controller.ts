@@ -1,37 +1,65 @@
 import { Request, Response } from "express";
-import { registerUser, loginUser } from "./auth.service";
+import { registerUser, loginUser, logoutUser } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
-import jwt from "jsonwebtoken";
-import { AuthPayload } from "../../types/auth";
+import { verifyAccessToken } from "../../utils/jwtUtils";
 
 export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
-  const user = await registerUser(req, name, email, password);
-  req.log.info(
-    {
-      userId: user.id,
-    },
-    "User registered",
-  );
-  sendResponse({
-    res,
-    statusCode: 201,
-    success: true,
-    message: "User registered successfully",
-    data: user,
-  });
+  try {
+    const user = await registerUser(name, email, password);
+    req.log.info({ userId: user.id }, "User registered");
+
+    sendResponse({
+      res,
+      statusCode: 201,
+      success: true,
+      message: "User registered successfully",
+      data: user,
+    });
+  } catch (err: any) {
+    req.log.error(err.message);
+    res.status(400).json({ message: err.message });
+  }
 };
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  const token = await loginUser(req, email, password);
-  const decoded = jwt.verify(token, process.env.JWT_SECRET!) as AuthPayload;
-  req.log.info({ userId: decoded.userId }, "User logged in");
-  sendResponse({
-    res,
-    statusCode: 200,
-    success: true,
-    message: "User logged in successfully",
-    data: { token },
-  });
+  try {
+    const { accessToken, refreshToken } = await loginUser(email, password);
+
+    const decoded = verifyAccessToken(accessToken);
+    req.log.info({ userId: decoded.userId }, "User logged in");
+
+    sendResponse({
+      res,
+      statusCode: 200,
+      success: true,
+      message: "User logged in successfully",
+      data: { accessToken, refreshToken },
+    });
+  } catch (err: any) {
+    req.log.error(err.message);
+    res.status(401).json({ message: err.message });
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Missing token" });
+    }
+    await logoutUser(req.user.userId);
+    req.log.info("User logged out");
+    sendResponse({
+      res,
+      statusCode: 200,
+      success: true,
+      data: null,
+      message: "User logged out successfully",
+    });
+  } catch (err: any) {
+    req.log.error(err.message);
+    res.status(500).json({ message: err.message });
+  }
 };

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { AuthPayload } from "../types/auth";
-import { success } from "zod";
+import { verifyAccessToken } from "../utils/jwtUtils";
 
 export const authMiddleware = (
   req: Request,
@@ -36,7 +36,7 @@ export const authMiddleware = (
       .json({ success: false, message: "token not provided" });
   }
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as AuthPayload;
+    const decoded = verifyAccessToken(token) as AuthPayload;
     req.user = decoded;
 
     if (req.log) {
@@ -45,9 +45,9 @@ export const authMiddleware = (
 
     next();
   } catch {
-    req.log.warn("Token verification failed");
+    req.log.error("Token verification failed");
     return res
-      .status(401)
+      .status(403)
       .json({ success: false, message: "Token verification failed" });
   }
 };

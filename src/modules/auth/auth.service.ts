@@ -1,64 +1,47 @@
 import { prisma } from "../../config/prisma";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { Request } from "express";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../../utils/jwtUtils";
 
-export const registerUser = async (
-  req: Request,
+export async function registerUser(
   name: string,
   email: string,
   password: string,
-) => {
-  const exitingUser = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
+) {
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) throw new Error("User already exists");
 
-  if (exitingUser) {
-    req.log.error("User  already exists");
-    throw new Error("User  already exists");
-  }
+  const hashedPassword = await bcrypt.hash(password, 10);
   const { password: _, ...safeUser } = await prisma.user.create({
-    data: {
-      name,
-      email,
-      password: await bcrypt.hash(password, 3),
-    },
+    data: { name, email, password: hashedPassword },
   });
 
-  return safeUser;
-};
+  return safeUser; // ✅ return data, bukan res.json
+}
 
-export const loginUser = async (
-  req: Request,
-  email: string,
-  password: string,
-) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
-
-  if (!user) {
-    req.log.error("User not found");
-    throw new Error("User not found");
-  }
+export async function loginUser(email: string, password: string) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new Error("User not found");
 
   const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) throw new Error("Invalid password");
 
-  if (!isMatch) {
-    req.log.error("invalid password");
-    throw new Error("invalid password");
-  }
-  const payload = {
-    userId: user.id,
-    email: user.email,
-  };
-  const token = jwt.sign(payload, process.env.JWT_SECRET!, {
-    expiresIn: "1h",
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      userId: user.id,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+    },
   });
 
-  return token;
-};
+  return { accessToken, refreshToken }; // ✅ return objek token
+}
+
+export async function logoutUser(userId: string) {
+  await prisma.refreshToken.deleteMany({ where: { userId } });
+}
