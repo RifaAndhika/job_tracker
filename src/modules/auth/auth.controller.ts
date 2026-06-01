@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
 import { registerUser, loginUser, logoutUser } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
-import { verifyAccessToken } from "../../utils/jwtUtils";
+import {
+  generateAccessToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+} from "../../utils/jwtUtils";
+import { AuthPayload } from "../../types/auth";
 
 export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -40,6 +45,32 @@ export const login = async (req: Request, res: Response) => {
   } catch (err: any) {
     req.log.error(err.message);
     res.status(401).json({ message: err.message });
+  }
+};
+
+export const refresh = async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Refresh token is required" });
+  }
+
+  try {
+    const payload = verifyRefreshToken(refreshToken) as AuthPayload;
+    const newAccessToken = generateAccessToken({
+      id: payload.userId,
+      email: payload.email || "",
+    });
+    req.log.info({ userId: payload.userId }, "Access token refreshed");
+    sendResponse({
+      res,
+      statusCode: 200,
+      success: true,
+      message: "Access token refreshed successfully",
+      data: { accessToken: newAccessToken },
+    });
+  } catch (err: any) {
+    req.log.error(err.message);
+    return res.status(401).json({ message: "Invalid refresh token" });
   }
 };
 
