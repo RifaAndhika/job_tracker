@@ -63,7 +63,7 @@ export const totalApplicationsMonthlyService = async (userid: string) => {
     }[]
   >`
   SELECT
-  DATE_TRUNC('month', "appliedDate") AS month,
+  TO_CHAR( DATE_TRUNC('month', "createdAt"), 'YYYY-MM') AS month,
   COUNT(*):: int AS count
   FROM "JobApplication"
   WHERE "userId" = ${userid}
@@ -72,7 +72,7 @@ export const totalApplicationsMonthlyService = async (userid: string) => {
   `;
 
   return grouped.map((item) => ({
-    month: item.month.toISOString().slice(0, 7),
+    month: item.month,
     count: Number(item.count),
   }));
 

@@ -11,7 +11,7 @@ export const createJobService = async (
       companyName: data.companyName,
       position: data.position,
       status: data.status,
-      appliedDate: data.appliedDate,
+      appliedDate: new Date(data.appliedDate),
       ...(data.source !== undefined && { source: data.source }),
       ...(data.notes !== undefined && { notes: data.notes }),
     },

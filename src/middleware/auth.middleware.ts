@@ -39,9 +39,7 @@ export const authMiddleware = (
     const decoded = verifyAccessToken(token) as AuthPayload;
     req.user = decoded;
 
-    if (req.log) {
-      req.log = req.log.child({ userId: decoded.userId });
-    }
+    req.log = req.log.child({ userId: decoded.userId });
 
     next();
   } catch {
