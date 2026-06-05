@@ -6,6 +6,7 @@ import {
   verifyAccessToken,
   verifyRefreshToken,
 } from "../../utils/jwtUtils";
+import { AppError } from "../../utils/appError";
 import { AuthPayload } from "../../types/auth";
 
 export const register = async (req: Request, res: Response) => {
@@ -51,7 +52,7 @@ export const login = async (req: Request, res: Response) => {
 export const refresh = async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
   if (!refreshToken) {
-    return res.status(400).json({ message: "Refresh token is required" });
+    throw new AppError("Refresh token is required", 400);
   }
 
   try {
@@ -70,7 +71,7 @@ export const refresh = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     req.log.error(err.message);
-    return res.status(401).json({ message: "Invalid refresh token" });
+    throw new AppError("Refresh token is required", 400);
   }
 };
 
@@ -78,7 +79,7 @@ export const logout = async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) {
-      return res.status(400).json({ message: "Missing token" });
+      throw new AppError("Refresh token is required", 400);
     }
     await logoutUser(req.user.userId);
     req.log.info("User logged out");
@@ -91,6 +92,6 @@ export const logout = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     req.log.error(err.message);
-    res.status(500).json({ message: err.message });
+    throw new AppError("Logout failed", 500);
   }
 };

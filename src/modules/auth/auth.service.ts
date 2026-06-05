@@ -4,6 +4,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../../utils/jwtUtils";
+import { AppError } from "../../utils/appError";
 
 export async function registerUser(
   name: string,
@@ -23,10 +24,10 @@ export async function registerUser(
 
 export async function loginUser(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) throw new Error("User not found");
+  if (!user) throw new AppError("User not found", 400);
 
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) throw new Error("Invalid password");
+  if (!isMatch) throw new AppError("Invalid password", 400);
 
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);

@@ -6,7 +6,7 @@ import {
   updateJobService,
   deleteJobService,
 } from "./job.service";
-
+import { AppError } from "../../utils/appError";
 import { sendResponse } from "../../utils/sendResponse";
 
 export const createJobHandler = async (req: Request, res: Response) => {
