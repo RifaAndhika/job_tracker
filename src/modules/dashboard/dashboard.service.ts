@@ -29,7 +29,7 @@ export const totalApplicationsByStatusService = async (userid: string) => {
     REJECTED: 0,
     ACCEPTED: 0,
   };
-  grouped.forEach((item) => {
+  grouped.forEach((item:any) => {
     analytics.total += item._count.status;
     switch (item.status) {
       case "APPLIED":
@@ -71,7 +71,7 @@ export const totalApplicationsMonthlyService = async (userid: string) => {
   ORDER BY month ASC
   `;
 
-  return grouped.map((item) => ({
+  return grouped.map((item:any) => ({
     month: item.month,
     count: Number(item.count),
   }));
