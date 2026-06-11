@@ -17,10 +17,8 @@ services:
   # ── Service 2: PostgreSQL ────────────────────────────
   db:
     image: postgres:15            # Pakai image resmi, tidak perlu Dockerfile
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: hdgxtmkjtx39
-      POSTGRES_DB: jobtracker     # Nama database (sama dengan di DATABASE_URL)
+    env_file:
+      - .env
     volumes:
       - pgdata:/var/lib/postgresql/data   # Data persisten (tidak hilang saat container restart)
     restart: unless-stopped
