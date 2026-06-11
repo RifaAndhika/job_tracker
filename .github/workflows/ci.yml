@@ -25,10 +25,8 @@ jobs:
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
+        env_file:
+          - .env
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
