@@ -32,7 +32,7 @@ jobs:
           tags: my-app:ci
 
       - name: Run Lint inside Container
-        run: docker run --rm my-app:ci npm run lint || true  # skip kalau script tidak ada
+        run: docker run --rm my-app:ci npm run lint || true 
 
       - name: Run Build inside Container
         run: docker run --rm my-app:ci npm run build
