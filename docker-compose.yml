@@ -1,22 +1,30 @@
 version: "3.9"
-services:
-  backend:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgres://postgres:hdgxtmkjtx39@db:5432/jobtracker
-    depends_on:
-      - db
 
+services:
+  # ── Service 1: Backend Node.js ──────────────────────
+  backend:
+    build: .                      # Build dari Dockerfile di folder ini
+    ports:
+      - "3000:3000"               # host:container — akses via localhost:3000
+    env_file:
+      - .env
+      #                                               ^^
+      #                       "db" = nama service postgres di bawah
+    depends_on:
+      - db                        # Tunggu db siap sebelum backend start
+    restart: unless-stopped       # Auto-restart jika crash
+
+  # ── Service 2: PostgreSQL ────────────────────────────
   db:
-    image: postgres:15
+    image: postgres:15            # Pakai image resmi, tidak perlu Dockerfile
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: hdgxtmkjtx39
-      POSTGRES_DB: job-tracker
+      POSTGRES_DB: jobtracker     # Nama database (sama dengan di DATABASE_URL)
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data   # Data persisten (tidak hilang saat container restart)
+    restart: unless-stopped
 
+# Deklarasi named volume untuk data postgres
 volumes:
   pgdata:

@@ -1,3 +1,26 @@
+# Dependencies lokal — akan diinstall ulang di dalam container
 node_modules
-npm-debug.log
+
+# Hasil build lokal — akan di-compile ulang di dalam container
+dist
+
+# File environment — jangan pernah masuk image (rahasia!)
 .env
+.env.*
+
+# Log
+*.log
+npm-debug.log*
+
+# Git
+.git
+.gitignore
+
+# Docker itu sendiri
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Editor
+.vscode
+.idea
