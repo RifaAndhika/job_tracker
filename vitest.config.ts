@@ -6,6 +6,7 @@ export default defineConfig({
     test: {
         globals: true,
         environment: "node",
+        setupFiles: ["./src/__test__/helpers/prismaMock.ts"],
         coverage: {
             provider: "v8",
             reporter: ["text", "html"],
