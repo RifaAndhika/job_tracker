@@ -5,12 +5,12 @@ import {generateAccessToken} from '../utils/jwtUtils';
 
 const request = supertest(app);
 
-const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
 
 
 describe("GET /api/jobs/get", () => {
     it("should return a list of jobs for the authenticated user", async () => {
-
+        
+        const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
         prismaMock.jobApplication.findMany.mockResolvedValue([{
             id: "job-123",
             userId: "user-123",
