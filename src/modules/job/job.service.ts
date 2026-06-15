@@ -79,7 +79,7 @@ export const updateJobService = async (
   jobId: string,
   data: any,
 ) => {
-  return prisma.jobApplication.updateMany({
+  return prisma.jobApplication.update({
     where: {
       id: jobId,
       userId: userId,
@@ -89,7 +89,7 @@ export const updateJobService = async (
 };
 
 export const deleteJobService = async (userId: string, jobId: string) => {
-  return prisma.jobApplication.deleteMany({
+  return prisma.jobApplication.delete({
     where: {
       id: jobId,
       userId: userId,
