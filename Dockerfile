@@ -1,5 +1,5 @@
 # 1. Base image: OS + runtime yang dipakai
-FROM node:24-slim
+FROM node:22-slim
 
 # 2. Install OpenSSL (dibutuhkan Prisma)
 RUN apt-get update -y && apt-get install -y openssl
