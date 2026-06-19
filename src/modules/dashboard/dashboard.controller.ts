@@ -24,6 +24,7 @@ export const totalApplicationsByStatusHandler = async (
   res: Response,
 ) => {
   const userId = req.user.userId;
+  try{
   const totalJobs = await totalApplicationsByStatusService(userId);
   req.log.info("Total applications by status fetched");
   sendResponse({
@@ -31,6 +32,17 @@ export const totalApplicationsByStatusHandler = async (
     success: true,
     data: totalJobs,
   });
+ }catch (err){
+  req.log.error(err);
+  sendResponse({
+    res,
+    success:true,
+    message: "failed to fetch analytics",
+    data:null
+
+  });
+
+ }
 };
 
 export const totalApplicationMonthlyHandler = async (

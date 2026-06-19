@@ -75,8 +75,6 @@ export const totalApplicationsMonthlyService = async (userid: string) => {
     month: item.month,
     count: Number(item.count),
   }));
-
-  return grouped;
 };
 
 export const getAcceptedRateService = async (userId: string) => {

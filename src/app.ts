@@ -1,7 +1,6 @@
 import express from "express";
 import { requestLogger } from "./middleware/requestLogger";
 import cors from "cors";
-import { prisma } from "./config/prisma";
 import authRoute from "./modules/auth/auth.route";
 import jobRoute from "./modules/job/job.route";
 import dashboardRoute from "./modules/dashboard/dashboard.route";
