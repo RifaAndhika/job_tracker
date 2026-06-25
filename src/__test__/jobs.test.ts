@@ -6,8 +6,10 @@ import { ApplicationStatus } from "@prisma/client";
 
 const request = supertest(app);
 
+//GET
 describe("GET /api/jobs/get", () => {
   const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
+
   it("should return a list of jobs for the authenticated user", async () => {
     const token = generateAccessToken({
       id: userId,
@@ -16,7 +18,7 @@ describe("GET /api/jobs/get", () => {
 
     const mockJobs = [
       {
-        id: "job-123",
+        id: "06dc488a-d4ac-4e53-bfd1-6b34645d94b7",
         userId: userId,
         companyName: "PT Maju",
         position: "Backend Developer",
@@ -73,10 +75,26 @@ describe("GET /api/jobs/get", () => {
     expect(res.status).toBe(200); // BUKAN 500 — kamu sendiri yang nulis expect 500 di test asalnya, itu salah
     expect(res.body.data).toEqual([]);
   });
+
+  // 1. Request tanpa token → 401
+  it("should return 401 if no token provided", async () => {
+    const res = await request.get("/api/jobs/get");
+    expect(res.status).toBe(401);
+  });
+
+  // 2. Token invalid/expired → 401
+  it("should return 401 if token is invalid", async () => {
+    const res = await request
+      .get("/api/jobs/get")
+      .set("Authorization", "Bearer token-palsu");
+    expect(res.status).toBe(401);
+  });
 });
 
+//POST
 describe("POST /api/jobs/create", () => {
   const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
+
   it("should create a new job application for the authenticated user", async () => {
     const token = generateAccessToken({
       id: userId,
@@ -84,7 +102,7 @@ describe("POST /api/jobs/create", () => {
     });
 
     const job = {
-      id: "job-123",
+      id: "06dc488a-d4ac-4e53-bfd1-6b34645d94b7",
       userId: userId,
       companyName: "PT Maju",
       position: "Backend Developer",
@@ -131,8 +149,10 @@ describe("POST /api/jobs/create", () => {
   });
 });
 
+//GET BY ID
 describe("GET /api/jobs/:id", () => {
   const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
+
   it("should return a job application by ID for the authenticated user", async () => {
     const token = generateAccessToken({
       id: userId,
@@ -140,7 +160,7 @@ describe("GET /api/jobs/:id", () => {
     });
 
     prismaMock.jobApplication.findFirst.mockResolvedValue({
-      id: "job-123",
+      id: "06dc488a-d4ac-4e53-bfd1-6b34645d94b7",
       userId: userId, // ← samakan dengan token, bukan "user-123" asal
       companyName: "PT Maju",
       position: "Backend Developer",
@@ -153,7 +173,7 @@ describe("GET /api/jobs/:id", () => {
     });
 
     const res = await request
-      .get("/api/jobs/job-123")
+      .get("/api/jobs/06dc488a-d4ac-4e53-bfd1-6b34645d94b7")
       .set("Authorization", `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -182,16 +202,18 @@ describe("GET /api/jobs/:id", () => {
   });
 });
 
+//PUT
 describe("PUT /api/jobs/:id", () => {
   const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
+
   it("should update a job application by ID for the authenticated user", async () => {
     const token = generateAccessToken({
       id: userId,
       email: "user@example.com",
     });
 
-    const existingJob = {
-      id: "job-123",
+    const job = {
+      id: "06dc488a-d4ac-4e53-bfd1-6b34645d94b7",
       userId: userId,
       companyName: "PT Maju",
       position: "Backend Developer",
@@ -204,20 +226,20 @@ describe("PUT /api/jobs/:id", () => {
     };
 
     // WAJIB di-mock sekarang, karena service cek findFirst dulu sebelum update
-    prismaMock.jobApplication.findFirst.mockResolvedValue(existingJob);
+    prismaMock.jobApplication.findFirst.mockResolvedValue(job);
 
     prismaMock.jobApplication.update.mockResolvedValue({
-      ...existingJob,
-      status: "INTERVIEW",
+      ...job,
+      status: ApplicationStatus.INTERVIEW,
     });
 
     const res = await request
-      .put("/api/jobs/job-123")
+      .put("/api/jobs/06dc488a-d4ac-4e53-bfd1-6b34645d94b7")
       .set("Authorization", `Bearer ${token}`)
       .send({
         companyName: "PT Maju",
         position: "Backend Developer",
-        status: "INTERVIEW",
+        status: ApplicationStatus.INTERVIEW,
         appliedDate: new Date().toISOString(),
       });
 
@@ -250,18 +272,32 @@ describe("PUT /api/jobs/:id", () => {
 
     expect(res.status).toBe(404);
   });
+
+  // 3. Update dengan field invalid → 400
+  it("should return 400 if update data is invalid", async () => {
+    const token = generateAccessToken({
+      id: userId,
+      email: "user@example.com",
+    });
+    const res = await request
+      .put("/api/jobs/06dc488a-d4ac-4e53-bfd1-6b34645d94b7")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "STATUS_TIDAK_VALID" });
+    expect(res.status).toBe(400);
+  });
 });
 
+//DELETE
 describe("DELETE /api/jobs/:id", () => {
   const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
-  it("deleted job application", async () => {
+  it("should delete a job application for the authenticated user", async () => {
     const token = generateAccessToken({
       id: userId,
       email: "user@example.com",
     });
 
-    const existingJob = {
-      id: "job-123",
+    const job = {
+      id: "06dc488a-d4ac-4e53-bfd1-6b34645d94b7",
       userId: userId,
       companyName: "PT Maju",
       position: "Backend Developer",
@@ -273,10 +309,10 @@ describe("DELETE /api/jobs/:id", () => {
       updatedAt: new Date(),
     };
 
-    prismaMock.jobApplication.findFirst.mockResolvedValue(existingJob);
-    prismaMock.jobApplication.delete.mockResolvedValue(existingJob);
+    prismaMock.jobApplication.findFirst.mockResolvedValue(job);
+    prismaMock.jobApplication.delete.mockResolvedValue(job);
     const res = await request
-      .delete("/api/jobs/job-123")
+      .delete("/api/jobs/06dc488a-d4ac-4e53-bfd1-6b34645d94b7")
       .set("Authorization", `Bearer ${token}`);
 
     expect(res.status).toBe(200);

@@ -10,12 +10,7 @@ export const authMiddleware = (
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    req.log.warn(
-      {
-        reason: "jwt malformed",
-      },
-      "token verification failed",
-    );
+    req.log.warn({ reason: "jwt malformed" }, "token verification failed");
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
@@ -27,24 +22,23 @@ export const authMiddleware = (
   }
 
   const token = authHeader.split(" ")[1];
-
   if (!token) {
     req.log.warn("Token not provided");
     return res
       .status(401)
-      .json({ success: false, message: "token not provided" });
+      .json({ success: false, message: "Token not provided" });
   }
+
   try {
     const decoded = verifyAccessToken(token) as AuthPayload;
     req.user = decoded;
-
     req.log = req.log.child({ userId: decoded.userId });
-
     next();
-  } catch {
+  } catch (err: any) {
     req.log.error("Token verification failed");
+    // ganti ke 401, bukan 403
     return res
-      .status(403)
-      .json({ success: false, message: "Token verification failed" });
+      .status(401)
+      .json({ success: false, message: "Invalid or expired token" });
   }
 };
