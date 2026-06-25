@@ -76,10 +76,7 @@ export const refresh = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.body;
-    if (!refreshToken) {
-      throw new AppError("Refresh token is required", 401);
-    }
-    await logoutUser(req.user.userId);
+    await logoutUser(refreshToken);
     req.log.info("User logged out");
     sendResponse({
       res,
