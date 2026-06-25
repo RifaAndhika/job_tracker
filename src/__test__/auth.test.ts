@@ -1,9 +1,7 @@
-import supertest from 'supertest';
-import app from '../app';
-import {prismaMock} from './helpers/prismaMock';
-import bcrypt from 'bcrypt';
-
-
+import supertest from "supertest";
+import app from "../app";
+import { prismaMock } from "./helpers/prismaMock";
+import bcrypt from "bcrypt";
 
 const request = supertest(app);
 // ============================================================
@@ -29,7 +27,7 @@ describe("POST /api/auth/register", () => {
       email: "prabowo@example.com",
       password: "password123",
     });
-    
+
     console.log(res.status, res.body);
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
@@ -39,7 +37,11 @@ describe("POST /api/auth/register", () => {
   });
 
   it("should return 400 if email already exists", async () => {
-     console.log(await prismaMock.user.findUnique({ where: { email: "prabowo@example.com" } }));
+    console.log(
+      await prismaMock.user.findUnique({
+        where: { email: "prabowo@example.com" },
+      }),
+    );
     // Simulasi: prisma.user.findUnique menemukan user yang sudah ada
     prismaMock.user.findUnique.mockResolvedValue({
       id: "user-123",
@@ -54,7 +56,7 @@ describe("POST /api/auth/register", () => {
       name: "prabowo",
       email: "prabowo@example.com",
       password: "password123",
-  });
+    });
 
     expect(res.status).toBe(400);
     expect(res.body.message).toBe("User already exists");
@@ -82,7 +84,7 @@ describe("POST /api/auth/login", () => {
     prismaMock.refreshToken.create.mockResolvedValue({
       id: "token-123",
       token: "some-refresh-token",
-      userId: "user-123",
+      userId: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
       createdAt: new Date(),
       expiresAt: new Date(),
     });

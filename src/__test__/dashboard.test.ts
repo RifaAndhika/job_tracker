@@ -1,37 +1,56 @@
-import supertest from "supertest"; 
+import supertest from "supertest";
 import app from "../app";
 import { prismaMock } from "./helpers/prismaMock";
-import { generateAccessToken} from "../utils/jwtUtils";
-import * as service from "../modules/dashboard/dashboard.service"
-import { count } from "node:console";
+import { generateAccessToken } from "../utils/jwtUtils";
+import * as service from "../modules/dashboard/dashboard.service";
 import { prisma } from "../config/prisma";
 import { Mock } from "vitest";
 
+const request = supertest(app);
 
-const request =  supertest(app);
+describe("GET /api/dashboard/analytics", () => {
+  it("should get total jobs application", async () => {
+    const token = generateAccessToken({
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+      email: "user@example.com",
+    });
+    prismaMock.jobApplication.count.mockResolvedValue(67);
 
-describe("GET /api/dashboard/analytics" , () => {
-    it("should get total jobs application", async () => {
-        const  token = generateAccessToken({id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com"});
-           prismaMock.jobApplication.count.mockResolvedValue(67);
-        
-        const res = await request
-            .get("/api/dashboard/analytics")
-            .set("Authorization", `Bearer ${token}`);
+    const res = await request
+      .get("/api/dashboard/analytics")
+      .set("Authorization", `Bearer ${token}`);
 
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toBe(67);
+  });
 
-            expect(res.status).toBe(200);
-            expect(res.body.success).toBe(true);
-            expect(res.body.data).toBe(67);
-        
+  (it("should no have get total "),
+    async () => {
+      const token = generateAccessToken({
+        id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+        email: "user@example.com",
+      });
+      const total = 0;
+
+      prismaMock.jobApplication.count.mockResolvedValue(total);
+
+      const res = await request
+        .get("/api/dashboard/analytics")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toBe(0);
     });
 });
 
-
-
 describe("GET /api/dashboard/analytics/by-status", () => {
   it("should calculate total applications grouped by status correctly", async () => {
-    const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
+    const token = generateAccessToken({
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+      email: "user@example.com",
+    });
     const groupByMock = prismaMock.jobApplication.groupBy as unknown as Mock;
     // Mock return value dari prisma.jobApplication.groupBy
     // Bentuknya HARUS sama seperti yang Prisma groupBy beneran return:
@@ -67,7 +86,10 @@ describe("GET /api/dashboard/analytics/by-status", () => {
   });
 
   it("should return all zeros when user has no applications", async () => {
-    const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
+    const token = generateAccessToken({
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+      email: "user@example.com",
+    });
     const groupByMock = prismaMock.jobApplication.groupBy as unknown as Mock;
     // Edge case: groupBy return array kosong kalau tidak ada data sama sekali
     groupByMock.mockResolvedValue([]);
@@ -88,150 +110,165 @@ describe("GET /api/dashboard/analytics/by-status", () => {
   });
 });
 
-
-    describe("GET /api/dashboard/analytics/monthly", () => {
-    it("should return total job applications grouped by month", async () => {
-        const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
-
-        // Mock $queryRaw — return raw hasil SQL, BUKAN hasil setelah di-.map()
-        // karena .map()-nya dijalankan SETELAH query, di dalam service yang sama
-        prismaMock.$queryRaw.mockResolvedValue([
-        { month: "2026-04", count: 5 },
-        { month: "2026-05", count: 8 },
-        ]);
-
-        const res = await request
-        .get("/api/dashboard/analytics/monthly")
-        .set("Authorization", `Bearer ${token}`);
-
-        expect(res.status).toBe(200);
-        expect(res.body.success).toBe(true);
-
-        // Hasil akhir setelah .map() Number(item.count) dijalankan
-        expect(res.body.data).toEqual([
-        { month: "2026-04", count: 5 },
-        { month: "2026-05", count: 8 },
-        ]);
+describe("GET /api/dashboard/analytics/monthly", () => {
+  it("should return total job applications grouped by month", async () => {
+    const token = generateAccessToken({
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+      email: "user@example.com",
     });
 
-    it("should return empty array when there is no data", async () => {
-        const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
+    // Mock $queryRaw — return raw hasil SQL, BUKAN hasil setelah di-.map()
+    // karena .map()-nya dijalankan SETELAH query, di dalam service yang sama
+    prismaMock.$queryRaw.mockResolvedValue([
+      { month: "2026-04", count: 5 },
+      { month: "2026-05", count: 8 },
+    ]);
 
-        prismaMock.$queryRaw.mockResolvedValue([]);
+    const res = await request
+      .get("/api/dashboard/analytics/monthly")
+      .set("Authorization", `Bearer ${token}`);
 
-        const res = await request
-        .get("/api/dashboard/analytics/monthly")
-        .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
 
-        expect(res.body.data).toEqual([]);
-    });
-    });
+    // Hasil akhir setelah .map() Number(item.count) dijalankan
+    expect(res.body.data).toEqual([
+      { month: "2026-04", count: 5 },
+      { month: "2026-05", count: 8 },
+    ]);
+  });
 
-
-
-    describe("GET /api/dashboard/analytics/accepted-rate", () => {
-    it("should calculate accepted rate correctly", async () => {
-        const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
-
-        // Service manggil prisma.jobApplication.count() DUA KALI berturut-turut:
-        // panggilan 1 = total (tanpa filter status)
-        // panggilan 2 = accepted (filter status: ACCEPTED)
-        // mockResolvedValueOnce dipakai berurutan supaya tiap panggilan dapat nilai beda
-        prismaMock.jobApplication.count
-        .mockResolvedValueOnce(20)  // total
-        .mockResolvedValueOnce(5);  // accepted
-
-        const res = await request
-        .get("/api/dashboard/analytics/accepted-rate")
-        .set("Authorization", `Bearer ${token}`);
-
-        expect(res.status).toBe(200);
-        expect(res.body.success).toBe(true);
-
-        // (5/20)*100 = 25, dibulatkan Math.round → tetap 25
-        expect(res.body.data).toBe(25);
+  it("should return empty array when there is no data", async () => {
+    const token = generateAccessToken({
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+      email: "user@example.com",
     });
 
-    it("should round the rate correctly", async () => {
-        const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
+    prismaMock.$queryRaw.mockResolvedValue([]);
 
-        // Sengaja pilih angka yang hasil baginya tidak bulat,
-        // supaya Math.round() di service benar-benar teruji
-        prismaMock.jobApplication.count
-        .mockResolvedValueOnce(3)   // total
-        .mockResolvedValueOnce(1);  // accepted
+    const res = await request
+      .get("/api/dashboard/analytics/monthly")
+      .set("Authorization", `Bearer ${token}`);
 
-        const res = await request
-        .get("/api/dashboard/analytics/accepted-rate")
-        .set("Authorization", `Bearer ${token}`);
+    expect(res.body.data).toEqual([]);
+  });
+});
 
-        // (1/3)*100 = 33.33... → Math.round → 33
-        expect(res.body.data).toBe(33);
+describe("GET /api/dashboard/analytics/accepted-rate", () => {
+  it("should calculate accepted rate correctly", async () => {
+    const token = generateAccessToken({
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+      email: "user@example.com",
     });
 
-    it("should return 0 when there are no applications", async () => {
-        const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
+    // Service manggil prisma.jobApplication.count() DUA KALI berturut-turut:
+    // panggilan 1 = total (tanpa filter status)
+    // panggilan 2 = accepted (filter status: ACCEPTED)
+    // mockResolvedValueOnce dipakai berurutan supaya tiap panggilan dapat nilai beda
+    prismaMock.jobApplication.count
+      .mockResolvedValueOnce(20) // total
+      .mockResolvedValueOnce(5); // accepted
 
-        prismaMock.jobApplication.count
-        .mockResolvedValueOnce(0)
-        .mockResolvedValueOnce(0);
+    const res = await request
+      .get("/api/dashboard/analytics/accepted-rate")
+      .set("Authorization", `Bearer ${token}`);
 
-        const res = await request
-        .get("/api/dashboard/analytics/accepted-rate")
-        .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
 
-        expect(res.body.data).toBe(0);
+    // (5/20)*100 = 25, dibulatkan Math.round → tetap 25
+    expect(res.body.data).toBe(25);
+  });
+
+  it("should round the rate correctly", async () => {
+    const token = generateAccessToken({
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+      email: "user@example.com",
     });
+
+    // Sengaja pilih angka yang hasil baginya tidak bulat,
+    // supaya Math.round() di service benar-benar teruji
+    prismaMock.jobApplication.count
+      .mockResolvedValueOnce(3) // total
+      .mockResolvedValueOnce(1); // accepted
+
+    const res = await request
+      .get("/api/dashboard/analytics/accepted-rate")
+      .set("Authorization", `Bearer ${token}`);
+
+    // (1/3)*100 = 33.33... → Math.round → 33
+    expect(res.body.data).toBe(33);
+  });
+
+  it("should return 0 when there are no applications", async () => {
+    const token = generateAccessToken({
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+      email: "user@example.com",
     });
 
-        describe("GET /api/dashboard/analytics/overview", () => {
-        it("should get job applications overview", async () => {
-            const token = generateAccessToken({ id: "4101880a-ba2a-47e2-9ff7-8961686c6f00", email: "user@example.com" });
+    prismaMock.jobApplication.count
+      .mockResolvedValueOnce(0)
+      .mockResolvedValueOnce(0);
 
-            // count dipanggil 3x total, harus diisi 3 kali berurutan:
-            // ke-1: totalApplicationsService → total semua job
-            // ke-2: getAcceptedRateService → total (lagi, untuk hitung rate)
-            // ke-3: getAcceptedRateService → accepted
-            prismaMock.jobApplication.count
-            .mockResolvedValueOnce(20)  // totalApplications
-            .mockResolvedValueOnce(20)  // total (dalam acceptedRate)
-            .mockResolvedValueOnce(5);  // accepted (dalam acceptedRate)
+    const res = await request
+      .get("/api/dashboard/analytics/accepted-rate")
+      .set("Authorization", `Bearer ${token}`);
 
-            // groupBy dipanggil 1x → totalApplicationsByStatusService
-            (prismaMock.jobApplication.groupBy as any).mockResolvedValue([
-            { status: "APPLIED", _count: { status: 15 } },
-            { status: "ACCEPTED", _count: { status: 5 } },
-            ]);
+    expect(res.body.data).toBe(0);
+  });
+});
 
-            // $queryRaw dipanggil 1x → totalApplicationsMonthlyService
-            prismaMock.$queryRaw.mockResolvedValue([
-            { month: "2026-05", count: 12 },
-            { month: "2026-06", count: 8 },
-            ]);
+describe("GET /api/dashboard/analytics/overview", () => {
+  it("should get job applications overview", async () => {
+    const token = generateAccessToken({
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
+      email: "user@example.com",
+    });
 
-            const res = await request
-            .get("/api/dashboard/analytics/overview")
-            .set("Authorization", `Bearer ${token}`);
+    // count dipanggil 3x total, harus diisi 3 kali berurutan:
+    // ke-1: totalApplicationsService → total semua job
+    // ke-2: getAcceptedRateService → total (lagi, untuk hitung rate)
+    // ke-3: getAcceptedRateService → accepted
+    prismaMock.jobApplication.count
+      .mockResolvedValueOnce(20) // totalApplications
+      .mockResolvedValueOnce(20) // total (dalam acceptedRate)
+      .mockResolvedValueOnce(5); // accepted (dalam acceptedRate)
 
-            expect(res.status).toBe(200);
-            expect(res.body.success).toBe(true);
+    // groupBy dipanggil 1x → totalApplicationsByStatusService
+    (prismaMock.jobApplication.groupBy as any).mockResolvedValue([
+      { status: "APPLIED", _count: { status: 15 } },
+      { status: "ACCEPTED", _count: { status: 5 } },
+    ]);
 
-            expect(res.body.data).toEqual({
-            totalApplications: 20,
-            statusStats: {
-                total: 20,
-                APPLIED: 15,
-                SCREENING: 0,
-                INTERVIEW: 0,
-                OFFER: 0,
-                REJECTED: 0,
-                ACCEPTED: 5,
-            },
-            monthlyStats: [
-                { month: "2026-05", count: 12 },
-                { month: "2026-06", count: 8 },
-            ],
-            acceptedRate: 25, // (5/20)*100
-            });
-        });
-        });
+    // $queryRaw dipanggil 1x → totalApplicationsMonthlyService
+    prismaMock.$queryRaw.mockResolvedValue([
+      { month: "2026-05", count: 12 },
+      { month: "2026-06", count: 8 },
+    ]);
+
+    const res = await request
+      .get("/api/dashboard/analytics/overview")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+
+    expect(res.body.data).toEqual({
+      totalApplications: 20,
+      statusStats: {
+        total: 20,
+        APPLIED: 15,
+        SCREENING: 0,
+        INTERVIEW: 0,
+        OFFER: 0,
+        REJECTED: 0,
+        ACCEPTED: 5,
+      },
+      monthlyStats: [
+        { month: "2026-05", count: 12 },
+        { month: "2026-06", count: 8 },
+      ],
+      acceptedRate: 25, // (5/20)*100
+    });
+  });
+});

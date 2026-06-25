@@ -40,6 +40,7 @@ import { JobQueryType, CreateJobInput } from "./job.schema";
     userId: string,
       data: CreateJobInput,
     ) => {
+  
       return prisma.jobApplication.create({
         data: {
           userId,

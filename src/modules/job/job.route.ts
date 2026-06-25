@@ -7,8 +7,10 @@ import {
   deleteJobHandler,
 } from "./job.controller";
 import { authMiddleware } from "../../middleware/auth.middleware";
-import { validate } from "../../middleware/validation.middleware";
-import { validateQueryJob } from "../job/job.validation";
+import {
+  validate,
+  validateQueryJob,
+} from "../../middleware/validation.middleware";
 import { createJobSchema } from "./job.schema";
 import { jobQuerySchema } from "./job.schema";
 

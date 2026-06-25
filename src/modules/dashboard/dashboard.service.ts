@@ -1,6 +1,7 @@
 import {prisma} from "../../config/prisma";
 
 export const totalApplicationsService = async (userid: string) => {
+
   const total = await prisma.jobApplication.count({
     where: {
       userId: userid,
