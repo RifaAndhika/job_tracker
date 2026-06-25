@@ -1,9 +1,12 @@
+import { refresh } from "./auth.controller";
 import { prisma } from "../../config/prisma";
 import bcrypt from "bcrypt";
 import {
   generateAccessToken,
   generateRefreshToken,
+  verifyRefreshToken,
 } from "../../utils/jwtUtils";
+import { AuthPayload } from "../../types/auth";
 import { AppError } from "../../utils/appError";
 
 export async function registerUser(
@@ -43,6 +46,21 @@ export async function loginUser(email: string, password: string) {
   return { accessToken, refreshToken }; // ✅ return objek token
 }
 
+export async function refreshToken(refreshToken: string) {
+  const record = await prisma.refreshToken.findUnique({
+    where: { token: refreshToken },
+  });
+  if (!record) throw new AppError("Refresh token is required", 401);
+
+  const payload = verifyRefreshToken(refreshToken) as AuthPayload;
+  const accessToken = generateAccessToken({
+    id: payload.userId,
+    email: payload.email || "",
+  });
+  return { accessToken };
+}
+
+//oke ini jadi problem jika akun akses di dua device sama waktu maka akan kickout device lain juga
 export async function logoutUser(userId: string) {
   await prisma.refreshToken.deleteMany({ where: { userId } });
 }

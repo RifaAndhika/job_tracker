@@ -2,14 +2,6 @@ import { prisma } from "../../config/prisma";
 import { JobQueryType, CreateJobInput, UpdateJobInput } from "./job.schema";
 import { AppError } from "../../utils/appError";
 
-const validStatuses = [
-  "APPLIED",
-  "SCREENING",
-  "INTERVIEW",
-  "OFFER",
-  "REJECTED",
-  "ACCEPTED",
-];
 export const getJobService = async (userId: string, query: JobQueryType) => {
   const { status, search, page, limit, sort, sortBy } = query;
   const skip = (page - 1) * limit;

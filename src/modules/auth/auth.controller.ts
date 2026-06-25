@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
-import { registerUser, loginUser, logoutUser } from "./auth.service";
-import { sendResponse } from "../../utils/sendResponse";
 import {
-  generateAccessToken,
-  verifyAccessToken,
-  verifyRefreshToken,
-} from "../../utils/jwtUtils";
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshToken,
+} from "./auth.service";
+import { sendResponse } from "../../utils/sendResponse";
+import { generateAccessToken, verifyAccessToken } from "../../utils/jwtUtils";
 import { AppError } from "../../utils/appError";
 import { AuthPayload } from "../../types/auth";
+import { th } from "zod/locales";
 
 export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -50,28 +52,24 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const refresh = async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
-  if (!refreshToken) {
+  const { Refreshtoken } = req.body;
+  if (!Refreshtoken) {
     throw new AppError("Refresh token is required", 400);
   }
 
   try {
-    const payload = verifyRefreshToken(refreshToken) as AuthPayload;
-    const newAccessToken = generateAccessToken({
-      id: payload.userId,
-      email: payload.email || "",
-    });
-    req.log.info({ userId: payload.userId }, "Access token refreshed");
+    const { accessToken } = await refreshToken(Refreshtoken);
+    req.log.info({ Refreshtoken }, "Access token refreshed");
     sendResponse({
       res,
       statusCode: 200,
       success: true,
       message: "Access token refreshed successfully",
-      data: { accessToken: newAccessToken },
+      data: { accessToken },
     });
   } catch (err: any) {
     req.log.error(err.message);
-    throw new AppError("Refresh token is required", 400);
+    throw new AppError("Refresh token failed", 500);
   }
 };
 
@@ -79,7 +77,7 @@ export const logout = async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) {
-      throw new AppError("Refresh token is required", 400);
+      throw new AppError("Refresh token is required", 401);
     }
     await logoutUser(req.user.userId);
     req.log.info("User logged out");
@@ -91,7 +89,9 @@ export const logout = async (req: Request, res: Response) => {
       message: "User logged out successfully",
     });
   } catch (err: any) {
-    req.log.error(err.message);
-    throw new AppError("Logout failed", 500);
+    if (err instanceof AppError) {
+      req.log.error(err.message);
+      throw new AppError("logout failed", 500);
+    }
   }
 };
