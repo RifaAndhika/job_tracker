@@ -3,7 +3,7 @@ import {
   registerUser,
   loginUser,
   logoutUser,
-  refreshToken,
+  refreshTokenService,
 } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
 import { generateAccessToken, verifyAccessToken } from "../../utils/jwtUtils";
@@ -51,15 +51,15 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const refresh = async (req: Request, res: Response) => {
-  const { Refreshtoken } = req.body;
-  if (!Refreshtoken) {
+export const refreshTokenController = async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
     throw new AppError("Refresh token is required", 400);
   }
 
   try {
-    const { accessToken } = await refreshToken(Refreshtoken);
-    req.log.info({ Refreshtoken }, "Access token refreshed");
+    const { accessToken } = await refreshTokenService(refreshToken);
+    req.log.info({ refreshToken }, "Access token refreshed");
     sendResponse({
       res,
       statusCode: 200,
@@ -69,7 +69,7 @@ export const refresh = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     req.log.error(err.message);
-    throw new AppError("Refresh token failed", 500);
+    throw new AppError("Invalid refresh token", 401);
   }
 };
 

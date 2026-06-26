@@ -2,6 +2,7 @@ import supertest from "supertest";
 import app from "../app";
 import { prismaMock } from "./helpers/prismaMock";
 import bcrypt from "bcrypt";
+import { generateRefreshToken } from "../utils/jwtUtils";
 
 const request = supertest(app);
 // ============================================================
@@ -130,5 +131,35 @@ describe("POST /api/auth/login", () => {
     });
 
     expect(res.status).toBe(401);
+  });
+});
+
+describe("POST /api/auth/refresh", () => {
+  it("should refresh token successfully", async () => {
+    const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
+    // Simulasi: refresh token berhasil disimpan
+
+    const validRefreshToken = generateRefreshToken({
+      id: userId,
+      email: "test@example.com",
+    });
+
+    const refreshToken = {
+      id: "7ccf4c42-078a-4d6a-a8fc-cc5fdf112e0b",
+      token: validRefreshToken,
+      userId: userId,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      createdAt: new Date(),
+    };
+
+    prismaMock.refreshToken.findUnique.mockResolvedValue(refreshToken);
+
+    const res = await request
+      .post("/api/auth/refresh")
+      .send({ refreshToken: validRefreshToken });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toHaveProperty("accessToken");
   });
 });

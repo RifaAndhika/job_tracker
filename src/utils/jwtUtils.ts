@@ -11,10 +11,14 @@ export function generateAccessToken(user: { id: string; email: string }) {
   });
 }
 
-export function generateRefreshToken(user: { id: string }) {
-  return jwt.sign({ userId: user.id }, REFRESH_TOKEN_SECRET, {
-    expiresIn: "7d",
-  });
+export function generateRefreshToken(user: { id: string; email: string }) {
+  return jwt.sign(
+    { userId: user.id, email: user.email },
+    REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: "7d",
+    },
+  );
 }
 
 export function verifyAccessToken(token: string) {
