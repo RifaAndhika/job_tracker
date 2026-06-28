@@ -75,8 +75,7 @@ export const refreshTokenController = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    const { refreshToken } = req.body;
-    await logoutUser(refreshToken);
+    await logoutUser(req.user.userId);
     req.log.info("User logged out");
     sendResponse({
       res,
