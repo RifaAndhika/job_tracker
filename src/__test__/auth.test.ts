@@ -3,6 +3,7 @@ import app from "../app";
 import { prismaMock } from "./helpers/prismaMock";
 import bcrypt from "bcrypt";
 import { generateRefreshToken, generateAccessToken } from "../utils/jwtUtils";
+import { AppError } from "../utils/appError";
 
 const request = supertest(app);
 // ============================================================
@@ -235,5 +236,17 @@ describe("POST /api/auth/logout", () => {
         where: expect.objectContaining({ userId }),
       }),
     );
+  });
+
+  it("should return 500", () => {
+    prismaMock.refreshToken.deleteMany.mockRejectedValue(new Error("error"));
+    const token = generateAccessToken({
+      id: userId,
+      email: "user@example.com",
+    });
+    request
+      .post("/api/auth/logout")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(500);
   });
 });

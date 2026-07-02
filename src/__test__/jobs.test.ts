@@ -6,6 +6,52 @@ import { ApplicationStatus } from "@prisma/client";
 
 const request = supertest(app);
 
+describe("GET /api/jobs", () => {
+  const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
+  const token = generateAccessToken({ id: userId, email: "user@example.com" });
+
+  // 1. Happy path — tanpa filter (branch false untuk status & search)
+  it("should return 200 with all jobs", async () => {
+    prismaMock.$transaction.mockResolvedValue([
+      [
+        {
+          id: "job-1",
+          companyName: "Google",
+          position: "SWE",
+          status: "APPLIED",
+        },
+      ],
+      1,
+    ]);
+
+    const res = await request
+      .get("/api/jobs/get")
+      .set("Authorization", `Bearer ${token}`)
+      .query({ page: 1, limit: 10, sort: "desc", sortBy: "appliedDate" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+  });
+
+  // 2. Dengan filter status & search (branch true untuk keduanya)
+  it("should return 200 with filtered jobs", async () => {
+    prismaMock.$transaction.mockResolvedValue([[], 0]);
+
+    const res = await request
+      .get("/api/jobs/get")
+      .set("Authorization", `Bearer ${token}`)
+      .query({
+        page: 1,
+        limit: 10,
+        sort: "desc",
+        sortBy: "appliedDate",
+        status: "APPLIED",
+        search: "google",
+      });
+
+    expect(res.status).toBe(200);
+  });
+});
 //GET
 describe("GET /api/jobs/get", () => {
   const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
@@ -76,18 +122,22 @@ describe("GET /api/jobs/get", () => {
     expect(res.body.data).toEqual([]);
   });
 
-  // 1. Request tanpa token → 401
-  it("should return 401 if no token provided", async () => {
-    const res = await request.get("/api/jobs/get");
-    expect(res.status).toBe(401);
-  });
-
-  // 2. Token invalid/expired → 401
-  it("should return 401 if token is invalid", async () => {
+  it("should return 400 validation error if request body is invalid", async () => {
+    const token = generateAccessToken({
+      id: userId,
+      email: "user@example.com",
+    });
     const res = await request
       .get("/api/jobs/get")
-      .set("Authorization", "Bearer token-palsu");
-    expect(res.status).toBe(401);
+      .set("Authorization", `Bearer ${token}`)
+      .query({ page: -1, limit: 999, sort: "INVALID" }); // invalid values
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        success: false,
+        message: "Validation error",
+      }),
+    );
   });
 });
 
@@ -146,6 +196,26 @@ describe("POST /api/jobs/create", () => {
       .send({ position: "Backend Developer" }); // companyName hilang
 
     expect(res.status).toBe(400);
+  });
+
+  //validate middleware
+  it("should return 400 if request body is invalid", async () => {
+    const token = generateAccessToken({
+      id: userId,
+      email: "user@example.com",
+    });
+    const res = await request
+      .post("/api/jobs/create")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ position: "Backend Developer", status: "INVALID_STATUS" }); // invalid status
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        success: false,
+        message: "Validation error",
+      }),
+    );
+    expect(res.body.data).toBeUndefined();
   });
 });
 

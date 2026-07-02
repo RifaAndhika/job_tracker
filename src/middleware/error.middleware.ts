@@ -7,9 +7,14 @@ export const errorMiddleware = (
   res: Response,
   next: NextFunction,
 ) => {
-  req.log.error(err.message);
-
-  res
-    .status(err.statusCode || 500)
-    .json({ success: false, message: err.message || "Internal Server Error" });
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+    });
+  }
+  return res.status(500).json({
+    success: false,
+    message: "Internal Server Error",
+  });
 };

@@ -14,23 +14,20 @@ export const authMiddleware = (
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
-  if (!authHeader.startsWith("Bearer ")) {
-    req.log.warn("Authorization header format invalid");
+  const parts = authHeader.split(" ");
+  if (parts[0] !== "Bearer") {
     return res
       .status(401)
       .json({ success: false, message: "Authorization header format invalid" });
   }
-
-  const token = authHeader.split(" ")[1];
-  if (!token) {
-    req.log.warn("Token not provided");
+  if (!parts[1]) {
     return res
       .status(401)
       .json({ success: false, message: "Token not provided" });
   }
 
   try {
-    const decoded = verifyAccessToken(token) as AuthPayload;
+    const decoded = verifyAccessToken(parts[1]) as AuthPayload;
     req.user = decoded;
     req.log = req.log.child({ userId: decoded.userId });
     next();
