@@ -20,8 +20,7 @@ describe("GET /notfound", () => {
 });
 
 describe("errorMiddleware", () => {
-  //untuk AppError
-  it("should return 400 for unknown route", async () => {
+  it("should return 400 for AppError", async () => {
     const res = await request.get("/error-test");
     expect(res.status).toBe(400);
     expect(res.body).toEqual(
@@ -32,14 +31,13 @@ describe("errorMiddleware", () => {
     );
   });
 
-  //untuk ServerError
   it("should return 500 for Internal Server Error", async () => {
     const res = await request.get("/error-test-500");
     expect(res.status).toBe(500);
     expect(res.body).toEqual(
       expect.objectContaining({
         success: false,
-        message: "",
+        message: "Internal Server Error", // fallback dari middleware
       }),
     );
   });

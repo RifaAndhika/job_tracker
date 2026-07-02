@@ -28,11 +28,11 @@ app.use("/api/dashboard", dashboardRoute);
 
 app.use(errorMiddleware);
 app.get("/error-test", (req, res) => {
-  throw new AppError("Test error", 400);
+  res.status(400).json({ success: false, message: "Test error" });
 });
 
 app.get("/error-test-500", (req, res) => {
-  throw new Error("Internal Server Error");
+  res.status(500).json({ success: false, message: "Internal Server Error" });
 });
 app.use("/", (req, res) => {
   res.status(404).json({ message: "Route not found" });
