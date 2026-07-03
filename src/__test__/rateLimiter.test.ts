@@ -22,6 +22,9 @@ const request = supertest(app);
 
 // Auth rate limiter test
 describe("Auth Rate Limiter", () => {
+  beforeEach(async () => {
+    await authStore.resetKey("172.29.0.1");
+  });
   it("harus return 429 setelah 10 request login gagal", async () => {
     // Kirim 10 request — semuanya gagal (401), tapi belum kena limit
     // skipSuccessfulRequests: true → hanya request gagal yang dihitung

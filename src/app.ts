@@ -6,7 +6,7 @@ import authRoute from "./modules/auth/auth.route";
 import jobRoute from "./modules/job/job.route";
 import dashboardRoute from "./modules/dashboard/dashboard.route";
 import { errorMiddleware } from "./middleware/error.middleware";
-import { AppError } from "./utils/appError";
+import { authStore } from "./middleware/rateLimiter";
 
 const app = express();
 app.use(requestLogger);
@@ -25,6 +25,10 @@ app.use("/api/jobs", jobRoute);
 app.use("/api/dashboard", dashboardRoute);
 
 //TESTING ROUTES
+app.post("/reset-limiter", (req, res) => {
+  authStore.resetAll();
+  res.json({ message: "Rate limiter reset" });
+});
 
 app.use(errorMiddleware);
 app.get("/error-test", (req, res) => {

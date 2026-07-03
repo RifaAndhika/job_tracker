@@ -23,10 +23,13 @@ export const authLimiter = rateLimit({
   max: 10,
   store: authStore,
   skipSuccessfulRequests: true,
-  message: { message: "Too many login attempts, try again in 15 minutes." },
+  message: {
+    message: "Too many login attempts, try again in 15 minutes.",
+    statusCode: 429,
+  },
 });
 
-// Buat limiter khusus route berat (jobs, dashboard analytics)
+// Buat limiter khusus route data banyak ,berat (jobs, dashboard analytics)
 export const heavyLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 30,
