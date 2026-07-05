@@ -24,13 +24,9 @@ app.use("/api/auth", authRoute);
 app.use("/api/jobs", jobRoute);
 app.use("/api/dashboard", dashboardRoute);
 
-//TESTING ROUTES
-app.post("/reset-limiter", (req, res) => {
-  authStore.resetAll();
-  res.json({ message: "Rate limiter reset" });
-});
-
 app.use(errorMiddleware);
+//TESTING ROUTES
+
 app.get("/error-test", (req, res) => {
   res.status(400).json({ success: false, message: "Test error" });
 });

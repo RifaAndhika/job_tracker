@@ -23,9 +23,12 @@ export const authLimiter = rateLimit({
   max: 10,
   store: authStore,
   skipSuccessfulRequests: true,
-  message: {
-    message: "Too many login attempts, try again in 15 minutes.",
-    statusCode: 429,
+
+  handler(req, res) {
+    console.log("🔥 LIMIT HIT");
+    res.status(429).json({
+      message: "Too many requests",
+    });
   },
 });
 
@@ -45,3 +48,5 @@ export const authenticatedLimiter = rateLimit({
   keyGenerator: (req) => req.user?.userId ?? "unknown",
   message: { message: "Rate limit exceeded. Please try again later." },
 });
+
+//for i in {1..11}; do   curl -s -w "%{http_code}\n" -o /dev/null     -X POST http://localhost:3000/api/auth/login     -H "Content-Type: application/json"     -H "X-Forwarded-For: 5.6.7.8"     -d '{"email":"fresh@test.com","password":"wrong"}'; done
