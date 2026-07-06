@@ -10,8 +10,8 @@ import {
 import { generateAccessToken } from "../utils/jwtUtils";
 import { prismaMock } from "./helpers/prismaMock";
 
-// Reset store sebelum tiap test
-// Tanpa ini, hit count dari test sebelumnya kebawa ke test berikutnya
+// Reset store before each test
+// Without this, hit count from previous tests will carry over
 beforeEach(async () => {
   await authStore.resetAll();
   await globalStore.resetAll();
@@ -25,17 +25,17 @@ describe("Auth Rate Limiter", () => {
   beforeEach(async () => {
     await authStore.resetKey("172.29.0.1");
   });
-  it("harus return 429 setelah 10 request login gagal", async () => {
-    // Kirim 10 request — semuanya gagal (401), tapi belum kena limit
-    // skipSuccessfulRequests: true → hanya request gagal yang dihitung
+
+  it("should return 429 after 10 failed login requests", async () => {
+    // Send 10 requests — all failed (401), but not yet rate limited
+    // skipSuccessfulRequests: true → only failed requests are counted
     for (let i = 0; i < 10; i++) {
       await request
         .post("/api/auth/login")
         .send({ email: "wrong@test.com", password: "wrongpassword" });
     }
 
-    // Request ke-11 harus kena rate limit
-
+    // The 11th request should hit the rate limit
     const res = await request
       .post("/api/auth/login")
       .send({ email: "wrong@test.com", password: "wrongpassword" });
@@ -46,29 +46,29 @@ describe("Auth Rate Limiter", () => {
     );
   });
 
-  it("harus return header RateLimit-Limit di response", async () => {
+  it("should return RateLimit headers in the response", async () => {
     const res = await request
       .post("/api/auth/login")
       .send({ email: "test@test.com", password: "wrongpassword" });
 
-    // standardHeaders: true → header ini harus ada
-    // Ini penting untuk client supaya tahu kapan bisa retry
+    // standardHeaders: true → these headers must exist
+    // Important for clients to know when they can retry
     expect(res.headers["ratelimit-limit"]).toBeDefined();
     expect(res.headers["ratelimit-remaining"]).toBeDefined();
   });
 
-  it("request sukses tidak dihitung ke limit", async () => {
-    // Ini test paling penting untuk skipSuccessfulRequests
-    // Kalau lo register berhasil 10x (misal test environment),
-    // counter tidak boleh naik
+  it("successful requests should not be counted towards the limit", async () => {
+    // This test is crucial for skipSuccessfulRequests
+    // If you register successfully 10 times (e.g. in test env),
+    // the counter must not increase
 
-    // Kirim 1 request yang akan sukses — mock atau pakai user valid
-    // Cek remaining tidak berkurang
+    // Send 1 request that will succeed — mock or use a valid user
+    // Check that remaining does not decrease
     const before = await request
       .post("/api/auth/login")
       .send({ email: "valid@test.com", password: "correctpassword" });
 
-    // Kalau 200, remaining harus tetap 10 (tidak berkurang)
+    // If 200, remaining should still be 10 (unchanged)
     if (before.status === 200) {
       expect(before.headers["ratelimit-remaining"]).toBe("10");
     }
@@ -77,13 +77,13 @@ describe("Auth Rate Limiter", () => {
 
 // Global rate limiter test
 describe("Global Rate Limiter", () => {
-  it("harus return 429 setelah 100 request dalam 15 menit", async () => {
-    // Kirim 100 request ke endpoint apapun
+  it("should return 429 after 100 requests within 15 minutes", async () => {
+    // Send 100 requests to any endpoint
     for (let i = 0; i < 100; i++) {
       await request.get("/");
     }
 
-    // Request ke-101 kena global limit
+    // The 101st request should hit the global limit
     const res = await request.get("/");
 
     expect(res.status).toBe(429);
@@ -91,9 +91,8 @@ describe("Global Rate Limiter", () => {
   });
 });
 
-//authenticatedLimiter test
-// Lo perlu helper untuk dapat token valid sebelum test ini
-
+// Authenticated limiter test
+// You need a helper to get a valid token before running this test
 describe("Authenticated Limiter", () => {
   beforeEach(async () => {
     await globalStore.resetAll();
@@ -108,7 +107,7 @@ describe("Authenticated Limiter", () => {
     prismaMock.jobApplication.count.mockResolvedValue(0);
   });
 
-  it("harus return 429 setelah 100 request dalam 15 menit", async () => {
+  it("should return 429 after 100 requests within 15 minutes", async () => {
     const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
     const token = generateAccessToken({
       id: userId,
@@ -134,7 +133,7 @@ describe("Authenticated Limiter", () => {
     expect(res.body.message).toBe("Too many requests, please try again later."); // Match the actual error message
   });
 
-  it("rate limit by userId bukan IP", async () => {
+  it("should rate limit by userId instead of IP", async () => {
     const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
     const token = generateAccessToken({
       id: userId,

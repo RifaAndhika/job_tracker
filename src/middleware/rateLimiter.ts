@@ -43,7 +43,7 @@ export const authenticatedLimiter = rateLimit({
   max: 60,
   store: authenticatedStore,
   keyGenerator: (req) => req.user?.userId ?? "unknown",
-  message: { message: "Rate limit exceeded. Please try again later." },
+  message: { message: "Slow down, too many requests." }, // samakan
 });
 
 //for i in {1..11}; do   curl -s -o /dev/null -w "%{http_code}\n"     -X POST http://localhost:3000/api/auth/login     -H "Content-Type: application/json"     -d '{"email":"test@e423.com","password":"234324"}'; done

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { heavyLimiter } from "../../middleware/rateLimiter";
+import { authenticatedLimiter } from "../../middleware/rateLimiter";
 import {
   createJobHandler,
   getJobsHandler,
@@ -22,12 +22,17 @@ router.use(authMiddleware);
 router.post("/create", validate(createJobSchema), createJobHandler);
 router.get(
   "/get",
-  heavyLimiter,
+  authenticatedLimiter,
   validateQueryJob(jobQuerySchema),
   getJobsHandler,
 );
-router.get("/:id", heavyLimiter, getJobByIdHandler);
-router.put("/:id", heavyLimiter, validate(createJobSchema), updateJobHandler);
+router.get("/:id", authenticatedLimiter, getJobByIdHandler);
+router.put(
+  "/:id",
+  authenticatedLimiter,
+  validate(createJobSchema),
+  updateJobHandler,
+);
 router.delete("/:id", deleteJobHandler);
 export default router;
 
