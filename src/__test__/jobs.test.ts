@@ -6,52 +6,6 @@ import { ApplicationStatus } from "@prisma/client";
 
 const request = supertest(app);
 
-describe("GET /api/jobs", () => {
-  const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";
-  const token = generateAccessToken({ id: userId, email: "user@example.com" });
-
-  // 1. Happy path — tanpa filter (branch false untuk status & search)
-  it("should return 200 with all jobs", async () => {
-    prismaMock.$transaction.mockResolvedValue([
-      [
-        {
-          id: "job-1",
-          companyName: "Google",
-          position: "SWE",
-          status: "APPLIED",
-        },
-      ],
-      1,
-    ]);
-
-    const res = await request
-      .get("/api/jobs/get")
-      .set("Authorization", `Bearer ${token}`)
-      .query({ page: 1, limit: 10, sort: "desc", sortBy: "appliedDate" });
-
-    expect(res.status).toBe(200);
-    expect(res.body.data).toHaveLength(1);
-  });
-
-  // 2. Dengan filter status & search (branch true untuk keduanya)
-  it("should return 200 with filtered jobs", async () => {
-    prismaMock.$transaction.mockResolvedValue([[], 0]);
-
-    const res = await request
-      .get("/api/jobs/get")
-      .set("Authorization", `Bearer ${token}`)
-      .query({
-        page: 1,
-        limit: 10,
-        sort: "desc",
-        sortBy: "appliedDate",
-        status: "APPLIED",
-        search: "google",
-      });
-
-    expect(res.status).toBe(200);
-  });
-});
 //GET
 describe("GET /api/jobs/get", () => {
   const userId = "4101880a-ba2a-47e2-9ff7-8961686c6f00";

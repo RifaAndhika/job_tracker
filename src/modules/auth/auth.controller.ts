@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
   registerUser,
   loginUser,
@@ -8,8 +8,6 @@ import {
 import { sendResponse } from "../../utils/sendResponse";
 import { generateAccessToken, verifyAccessToken } from "../../utils/jwtUtils";
 import { AppError } from "../../utils/appError";
-import { AuthPayload } from "../../types/auth";
-import { th } from "zod/locales";
 
 export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -73,7 +71,11 @@ export const refreshTokenController = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     await logoutUser(req.user.userId);
     req.log.info("User logged out");
@@ -85,9 +87,7 @@ export const logout = async (req: Request, res: Response) => {
       message: "User logged out successfully",
     });
   } catch (err: any) {
-    if (err instanceof AppError) {
-      req.log.error(err.message);
-      throw new AppError("logout failed", 500);
-    }
+    req.log.error(err.message);
+    return next(new AppError("Logout failed", 500));
   }
 };

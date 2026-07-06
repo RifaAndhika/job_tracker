@@ -238,15 +238,21 @@ describe("POST /api/auth/logout", () => {
     );
   });
 
-  it("should return 500", () => {
-    prismaMock.refreshToken.deleteMany.mockRejectedValue(new Error("error"));
+  it("should return 500", async () => {
+    prismaMock.refreshToken.deleteMany.mockRejectedValue(
+      new AppError("Logout failed", 500),
+    );
+
     const token = generateAccessToken({
-      id: userId,
+      id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
       email: "user@example.com",
     });
-    request
+
+    const res = await request
       .post("/api/auth/logout")
-      .set("Authorization", `Bearer ${token}`)
-      .expect(500);
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).toBe(500);
+    expect(res.body.message).toBe("Logout failed");
   });
 });
