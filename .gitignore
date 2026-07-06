@@ -4,3 +4,7 @@ node_modules
 .env.test
 *.log
 /src/generated/prisma
+
+# Ignore build output like dist and coverage directories
+echo "dist/" >> .gitignore
+echo "coverage/" >> .gitignore
