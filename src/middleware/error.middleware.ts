@@ -8,12 +8,6 @@ export const errorMiddleware = (
   res: Response,
   next: NextFunction,
 ) => {
-  if (err.statusCode === 429) {
-    res.status(429).json({
-      success: false,
-      message: err.message,
-    });
-  }
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       success: false,

@@ -240,7 +240,7 @@ describe("POST /api/auth/logout", () => {
 
   it("should return 500", async () => {
     prismaMock.refreshToken.deleteMany.mockRejectedValue(
-      new AppError("Logout failed", 500),
+      new Error("Database connection lost"),
     );
 
     const token = generateAccessToken({
@@ -253,6 +253,6 @@ describe("POST /api/auth/logout", () => {
       .set("Authorization", `Bearer ${token}`);
 
     expect(res.status).toBe(500);
-    expect(res.body.message).toBe("Logout failed");
+    expect(res.body.message).toBe("Internal Server Error");
   });
 });

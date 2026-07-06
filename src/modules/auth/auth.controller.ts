@@ -88,6 +88,6 @@ export const logout = async (
     });
   } catch (err: any) {
     req.log.error(err.message);
-    return next(new AppError("Logout failed", 500));
+    return next(new AppError("Internal Server Error", 500));
   }
 };
