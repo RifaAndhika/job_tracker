@@ -27,12 +27,7 @@ router.get(
   getJobsHandler,
 );
 router.get("/:id", authenticatedLimiter, getJobByIdHandler);
-router.put(
-  "/:id",
-  authenticatedLimiter,
-  validate(createJobSchema),
-  updateJobHandler,
-);
+router.put("/:id", validate(createJobSchema), updateJobHandler);
 router.delete("/:id", deleteJobHandler);
 export default router;
 

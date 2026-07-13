@@ -12,7 +12,7 @@ const app = express();
 app.use(requestLogger);
 app.use(cors());
 app.use(express.json());
-// app.set("trust proxy", 1);  test ip address untuk hit counter/limiter
+app.set("trust proxy", 1); //  ip address client for hit counter/limiter
 app.use(globalLimiter);
 
 app.get("/", (req, res) => {
