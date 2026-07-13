@@ -74,7 +74,7 @@ Membuat akun pengguna baru di dalam sistem.
 
 - **Autentikasi:** Tidak membutuhkan token.
 
-#### Request Body
+Request Body:
 
 ```json
 {
@@ -84,7 +84,7 @@ Membuat akun pengguna baru di dalam sistem.
 }
 ```
 
-#### Response 201 (Created)
+Response 201 (Created)
 
 ```json
 {
@@ -99,7 +99,7 @@ Membuat akun pengguna baru di dalam sistem.
 }
 ```
 
-#### Response 400 (Bad Request)
+Response 400 (Bad Request)
 
 ```json
 {
@@ -116,7 +116,7 @@ Melakukan autentikasi pengguna ke dalam aplikasi.
 
 - **Autentikasi:** Tidak membutuhkan token.
 
-#### Request Body
+Request Body:
 
 ```json
 {
@@ -125,7 +125,7 @@ Melakukan autentikasi pengguna ke dalam aplikasi.
 }
 ```
 
-#### Response 200 (OK)
+Response 200 (OK) :
 
 ```json
 {
@@ -138,7 +138,7 @@ Melakukan autentikasi pengguna ke dalam aplikasi.
 }
 ```
 
-#### Response 401 (Unauthorized)
+Response 401 (Unauthorized)
 
 ```json
 {
@@ -155,7 +155,7 @@ Menghasilkan `accessToken` baru yang valid menggunakan _refresh token_ ketika to
 
 - **Autentikasi:** Tidak membutuhkan token akses di header.
 
-#### Request Body
+Request Body:
 
 ```json
 {
@@ -163,7 +163,7 @@ Menghasilkan `accessToken` baru yang valid menggunakan _refresh token_ ketika to
 }
 ```
 
-#### Response 200 (OK)
+Response 200 (OK) :
 
 ```json
 {
@@ -175,7 +175,7 @@ Menghasilkan `accessToken` baru yang valid menggunakan _refresh token_ ketika to
 }
 ```
 
-#### Response 400 (Bad Request)
+Response 400 (Bad Request)
 
 ```json
 {
@@ -184,7 +184,7 @@ Menghasilkan `accessToken` baru yang valid menggunakan _refresh token_ ketika to
 }
 ```
 
-#### Response 401 (Unauthorized)
+Response 401 (Unauthorized)
 
 ```json
 {
@@ -201,11 +201,11 @@ Mengakhiri sesi pengguna saat ini dengan menghapus data _refresh token_ yang val
 
 - **Autentikasi:** Membutuhkan Bearer Token.
 
-#### Header
+Header :
 
 - `Authorization`: `Bearer <access_token>`
 
-#### Response 200 (OK)
+Response 200 (OK) :
 
 ```json
 {
@@ -216,6 +216,8 @@ Mengakhiri sesi pengguna saat ini dengan menghapus data _refresh token_ yang val
 
 ---
 
+####################################################################################################################
+
 ## 💼 Dokumentasi API: Manajemen Lamaran Pekerjaan (`/api/jobs`)
 
 ### POST /api/jobs/create
@@ -224,11 +226,11 @@ Membuat data lamaran pekerjaan (_job application_) baru untuk pengguna yang tera
 
 - **Autentikasi:** Membutuhkan Bearer Token.
 
-#### Header
+Header :
 
 - `Authorization`: `Bearer <access_token>`
 
-#### Request Body
+Request Body:
 
 ```json
 {
@@ -243,7 +245,7 @@ Membuat data lamaran pekerjaan (_job application_) baru untuk pengguna yang tera
 
 _Catatan: `source` dan `notes` bersifat opsional._
 
-#### Response 201 (Created)
+Response 201 (Created)
 
 ```json
 {
@@ -264,7 +266,7 @@ _Catatan: `source` dan `notes` bersifat opsional._
 }
 ```
 
-#### Response 400 (Bad Request)
+Response 400 (Bad Request)
 
 ```json
 {
@@ -281,7 +283,7 @@ Mengambil daftar lamaran pekerjaan milik pengguna dengan fitur penyaringan (_fil
 
 - **Autentikasi:** Membutuhkan Bearer Token (Dibatasi oleh _rate limiter_).
 
-#### Header
+Header :
 
 - `Authorization`: `Bearer <access_token>`
 
@@ -296,7 +298,7 @@ Mengambil daftar lamaran pekerjaan milik pengguna dengan fitur penyaringan (_fil
 | `sort`    | String (Enum) | Arah pengurutan data (`asc` atau `desc`)                                             | `desc`                 |
 | `sortBy`  | String (Enum) | Kolom acuan pengurutan data (`appliedDate`)                                          | `appliedDate`          |
 
-#### Response 200 (OK)
+Response 200 (OK) :
 
 ```json
 {
@@ -331,11 +333,11 @@ Mengambil detail satu data lamaran pekerjaan secara spesifik berdasarkan ID unik
 
 - **Autentikasi:** Membutuhkan Bearer Token (Dibatasi oleh _rate limiter_).
 
-#### Header
+Header :
 
 - `Authorization`: `Bearer <access_token>`
 
-#### Response 200 (OK)
+Response 200 (OK) :
 
 ```json
 {
@@ -356,7 +358,7 @@ Mengambil detail satu data lamaran pekerjaan secara spesifik berdasarkan ID unik
 }
 ```
 
-#### Response 404 (Not Found)
+Response 404 (Not Found):
 
 ```json
 {
@@ -373,11 +375,11 @@ Memperbarui data lamaran pekerjaan tertentu secara menyeluruh berdasarkan ID uni
 
 - **Autentikasi:** Membutuhkan Bearer Token (Dibatasi oleh _rate limiter_).
 
-#### Header
+Header :
 
 - `Authorization`: `Bearer <access_token>`
 
-#### Request Body
+Request Body:
 
 ```json
 {
@@ -390,7 +392,7 @@ Memperbarui data lamaran pekerjaan tertentu secara menyeluruh berdasarkan ID uni
 }
 ```
 
-#### Response 200 (OK)
+Response 200 (OK) :
 
 ```json
 {
@@ -419,7 +421,7 @@ Menghapus rekaman data lamaran pekerjaan dari sistem berdasarkan ID unik.
 
 - **Autentikasi:** Tidak membutuhkan token tambahan (sesuai definisi router utama).
 
-#### Response 200 (OK)
+Response 200 (OK) :
 
 ```json
 {
@@ -428,7 +430,7 @@ Menghapus rekaman data lamaran pekerjaan dari sistem berdasarkan ID unik.
 }
 ```
 
-#### Response 404 (Not Found)
+Response 404 (Not Found):
 
 ```json
 {
