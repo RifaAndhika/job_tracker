@@ -41,7 +41,7 @@ npm run dev
 npm test
 npm run test:coverage
 
-### POST /api/auth/register
+## POST /api/auth/register
 
 Membuat akun baru untuk user
 Tidak perlu membutuhkan token
@@ -95,4 +95,53 @@ Response 401:
 {
 "success": false,
 "message": "Invalid email or password"
+}
+
+## POST /api/auth/refresh
+
+untuk membuat access token baru jika acces token lama sudah expired dengan mengirim refresh token
+
+Request body:
+{
+"refreshtoken" : "string"
+}
+
+Response 200:
+{
+
+"success" : true,
+"message" : "Access token refreshed successfully",
+"data" : {
+"accessToken" : "string"
+}
+}
+
+Response 400:
+{
+
+"success" : false,
+"message" : "Refresh Token Required"
+}
+Response 401:
+{
+
+"success" : false,
+"message" : "Invalid refresh token"
+}
+
+## POST /api/auth/logout
+
+untuk logout akan mengambil data userId, dan menghapus refreshToken sesuai user
+Requires: Bearer token (Authorization header)
+
+Response 200:
+{
+"success": true,
+"message" : "User logged out successfully"
+}
+
+Response 500:
+{
+"success" : false,
+"message" : "Internal Server Error"
 }
