@@ -27,40 +27,47 @@ Job Tracker adalah RESTful API yang dirancang untuk membantu para pencari kerja 
 
 Metode ini direkomendasikan untuk mereplikasi lingkungan produksi secara instan.
 
-```bash
+bash
+
 # Salin konfigurasi environment variable
+
 cp .env.example .env
 
 # Build dan jalankan kontainer aplikasi beserta database
+
 docker compose up --build
-```
 
 ### Menjalankan di Lingkungan Lokal
 
 Jika Anda ingin melakukan pengembangan langsung tanpa Docker container untuk aplikasi:
 
-```bash
+bash
+
 # Instal dependensi proyek
+
 npm install
 
 # Jalankan migrasi database menggunakan Prisma
+
 npx prisma migrate dev
 
 # Jalankan server dalam mode pengembangan
+
 npm run dev
-```
 
 ### Pengujian (Testing)
 
 Proyek ini dilengkapi dengan suite pengujian otomatis untuk menjaga stabilitas API.
 
-```bash
+bash
+
 # Menjalankan seluruh pengujian otomatis
+
 npm test
 
 # Menjalankan pengujian sekaligus melihat laporan cakupan kode (coverage report)
+
 npm run test:coverage
-```
 
 ---
 
@@ -76,37 +83,34 @@ Membuat akun pengguna baru di dalam sistem.
 
 Request Body:
 
-```json
+json
 {
-  "name": "string",
-  "email": "string",
-  "password": "string"
+"name": "string",
+"email": "string",
+"password": "string"
 }
-```
 
 Response 201 (Created)
 
-```json
+json
 {
-  "success": true,
-  "message": "User registered successfully",
-  "data": {
-    "id": "uuid",
-    "name": "string",
-    "email": "string",
-    "createdAt": "datetime"
-  }
+"success": true,
+"message": "User registered successfully",
+"data": {
+"id": "uuid",
+"name": "string",
+"email": "string",
+"createdAt": "datetime"
 }
-```
+}
 
 Response 400 (Bad Request)
 
-```json
+json
 {
-  "success": false,
-  "message": "User already exists"
+"success": false,
+"message": "User already exists"
 }
-```
 
 ---
 
@@ -118,34 +122,31 @@ Melakukan autentikasi pengguna ke dalam aplikasi.
 
 Request Body:
 
-```json
+json
 {
-  "email": "user@example.com",
-  "password": "password"
+"email": "user@example.com",
+"password": "password"
 }
-```
 
 Response 200 (OK) :
 
-```json
+json
 {
-  "success": true,
-  "message": "User logged in successfully",
-  "data": {
-    "accessToken": "jwt-access-token",
-    "refreshToken": "jwt-refresh-token"
-  }
+"success": true,
+"message": "User logged in successfully",
+"data": {
+"accessToken": "jwt-access-token",
+"refreshToken": "jwt-refresh-token"
 }
-```
+}
 
 Response 401 (Unauthorized)
 
-```json
+json
 {
-  "success": false,
-  "message": "Invalid email or password"
+"success": false,
+"message": "Invalid email or password"
 }
-```
 
 ---
 
@@ -157,41 +158,37 @@ Menghasilkan `accessToken` baru yang valid menggunakan _refresh token_ ketika to
 
 Request Body:
 
-```json
+json
 {
-  "refreshToken": "string"
+"refreshToken": "string"
 }
-```
 
 Response 200 (OK) :
 
-```json
+json
 {
-  "success": true,
-  "message": "Access token refreshed successfully",
-  "data": {
-    "accessToken": "string"
-  }
+"success": true,
+"message": "Access token refreshed successfully",
+"data": {
+"accessToken": "string"
 }
-```
+}
 
 Response 400 (Bad Request)
 
-```json
+json
 {
-  "success": false,
-  "message": "Refresh Token Required"
+"success": false,
+"message": "Refresh Token Required"
 }
-```
 
 Response 401 (Unauthorized)
 
-```json
+json
 {
-  "success": false,
-  "message": "Invalid refresh token"
+"success": false,
+"message": "Invalid refresh token"
 }
-```
 
 ---
 
@@ -207,18 +204,17 @@ Header :
 
 Response 200 (OK) :
 
-```json
+json
 {
-  "success": true,
-  "message": "User logged out successfully"
+"success": true,
+"message": "User logged out successfully"
 }
-```
 
 ---
 
 ####################################################################################################################
 
-## 💼 Dokumentasi API: Manajemen Lamaran Pekerjaan (`/api/jobs`)
+## Dokumentasi API: Manajemen Lamaran Pekerjaan (`/api/jobs`)
 
 ### POST /api/jobs/create
 
@@ -232,48 +228,45 @@ Header :
 
 Request Body:
 
-```json
+json
 {
-  "companyName": "string",
-  "position": "string",
-  "status": "APPLIED | SCREENING | INTERVIEW | OFFER | REJECTED | ACCEPTED",
-  "appliedDate": "string (ISO Date-Time / YYYY-MM-DD)",
-  "source": "string",
-  "notes": "string"
+"companyName": "string",
+"position": "string",
+"status": "APPLIED | SCREENING | INTERVIEW | OFFER | REJECTED | ACCEPTED",
+"appliedDate": "string (ISO Date-Time / YYYY-MM-DD)",
+"source": "string",
+"notes": "string"
 }
-```
 
 _Catatan: `source` dan `notes` bersifat opsional._
 
 Response 201 (Created)
 
-```json
+json
 {
-  "success": true,
-  "message": "Job application created successfully",
-  "data": {
-    "id": "uuid",
-    "userId": "uuid",
-    "companyName": "string",
-    "position": "string",
-    "status": "string",
-    "appliedDate": "datetime",
-    "source": "string | null",
-    "notes": "string | null",
-    "createdAt": "datetime",
-    "updatedAt": "datetime"
-  }
+"success": true,
+"message": "Job application created successfully",
+"data": {
+"id": "uuid",
+"userId": "uuid",
+"companyName": "string",
+"position": "string",
+"status": "string",
+"appliedDate": "datetime",
+"source": "string | null",
+"notes": "string | null",
+"createdAt": "datetime",
+"updatedAt": "datetime"
 }
-```
+}
 
 Response 400 (Bad Request)
 
-```json
+json
 {
-  "success": false,
-  "message": "Validation error"
+"success": false,
+"message": "Validation error"
 }
-```
 
 ---
 
@@ -300,30 +293,29 @@ Header :
 
 Response 200 (OK) :
 
-```json
+json
 {
-  "success": true,
-  "message": "Job applications retrieved successfully",
-  "data": [
-    {
-      "id": "uuid",
-      "userId": "uuid",
-      "companyName": "string",
-      "position": "string",
-      "status": "string",
-      "appliedDate": "datetime",
-      "createdAt": "datetime",
-      "updatedAt": "datetime"
-    }
-  ],
-  "pagination": {
-    "currentPage": 1,
-    "totalPages": 3,
-    "totalItems": 25,
-    "limit": 10
-  }
+"success": true,
+"message": "Job applications retrieved successfully",
+"data": [
+{
+"id": "uuid",
+"userId": "uuid",
+"companyName": "string",
+"position": "string",
+"status": "string",
+"appliedDate": "datetime",
+"createdAt": "datetime",
+"updatedAt": "datetime"
 }
-```
+],
+"pagination": {
+"currentPage": 1,
+"totalPages": 3,
+"totalItems": 25,
+"limit": 10
+}
+}
 
 ---
 
@@ -339,33 +331,31 @@ Header :
 
 Response 200 (OK) :
 
-```json
+json
 {
-  "success": true,
-  "message": "Job application retrieved successfully",
-  "data": {
-    "id": "uuid",
-    "userId": "uuid",
-    "companyName": "string",
-    "position": "string",
-    "status": "string",
-    "appliedDate": "datetime",
-    "source": "string | null",
-    "notes": "string | null",
-    "createdAt": "datetime",
-    "updatedAt": "datetime"
-  }
+"success": true,
+"message": "Job application retrieved successfully",
+"data": {
+"id": "uuid",
+"userId": "uuid",
+"companyName": "string",
+"position": "string",
+"status": "string",
+"appliedDate": "datetime",
+"source": "string | null",
+"notes": "string | null",
+"createdAt": "datetime",
+"updatedAt": "datetime"
 }
-```
+}
 
 Response 404 (Not Found):
 
-```json
+json
 {
-  "success": false,
-  "message": "Job application not found"
+"success": false,
+"message": "Job application not found"
 }
-```
 
 ---
 
@@ -381,37 +371,35 @@ Header :
 
 Request Body:
 
-```json
+json
 {
-  "companyName": "string Updated",
-  "position": "string",
-  "status": "APPLIED | SCREENING | INTERVIEW | OFFER | REJECTED | ACCEPTED",
-  "appliedDate": "string (ISO Date-Time / YYYY-MM-DD)",
-  "source": "string",
-  "notes": "string"
+"companyName": "string Updated",
+"position": "string",
+"status": "APPLIED | SCREENING | INTERVIEW | OFFER | REJECTED | ACCEPTED",
+"appliedDate": "string (ISO Date-Time / YYYY-MM-DD)",
+"source": "string",
+"notes": "string"
 }
-```
 
 Response 200 (OK) :
 
-```json
+json
 {
-  "success": true,
-  "message": "Job application updated successfully",
-  "data": {
-    "id": "uuid",
-    "userId": "uuid",
-    "companyName": "string Updated",
-    "position": "string",
-    "status": "string",
-    "appliedDate": "datetime",
-    "source": "string | null",
-    "notes": "string | null",
-    "createdAt": "datetime",
-    "updatedAt": "datetime"
-  }
+"success": true,
+"message": "Job application updated successfully",
+"data": {
+"id": "uuid",
+"userId": "uuid",
+"companyName": "string Updated",
+"position": "string",
+"status": "string",
+"appliedDate": "datetime",
+"source": "string | null",
+"notes": "string | null",
+"createdAt": "datetime",
+"updatedAt": "datetime"
 }
-```
+}
 
 ---
 
@@ -423,18 +411,166 @@ Menghapus rekaman data lamaran pekerjaan dari sistem berdasarkan ID unik.
 
 Response 200 (OK) :
 
-```json
+json
 {
-  "success": true,
-  "message": "Job application deleted successfully"
+"success": true,
+"message": "Job application deleted successfully"
 }
-```
 
 Response 404 (Not Found):
 
-```json
+json
 {
-  "success": false,
-  "message": "Job application not found or already deleted"
+"success": false,
+"message": "Job application not found or already deleted"
 }
-```
+
+#############################################################
+
+## Dokumentasi API: Analytics Job Tracker (`/api/dashboard/analytics`)
+
+### 1. Get total Analytics
+
+Menghitung semua total lamaran kerja
+
+- **Endpoint:** `GET /api/dashboard/analytics`
+
+- **Header:**
+  Authorization: Bearer <jwt_token>
+
+-**Response (200 ok):**
+json
+{
+"success: : true,
+"data" : {
+"totalJobs" : int
+}
+}
+
+### 2. Get Analytics by Status
+
+Menghitung akumulasi jumlah lamaran kerja pengguna yang dikelompokkan berdasarkan setiap status yang ada.
+
+- **Endpoint:** `GET /api/dashboard/analytics/by-status`
+- **Headers:**
+
+  Authorization: Bearer <jwt_token>
+
+- **Response (200 OK):**
+  json
+  {
+  "success": true,
+  "data": {
+  "total": 25,
+  "APPLIED": 10,
+  "SCREENING": 5,
+  "INTERVIEW": 4,
+  "OFFER": 2,
+  "REJECTED": 3,
+  "ACCEPTED": 1
+  }
+  }
+
+---
+
+### 3. Get Monthly Application Trend
+
+Menampilkan tren frekuensi lamaran kerja yang dikirimkan oleh pengguna per bulan menggunakan agregasi waktu basis data.
+
+- **Endpoint:** `GET /api/dashboard/analytics/monthly`
+- **Headers:**
+
+  Authorization: Bearer <jwt_token>
+
+- **Response (200 OK):**
+  json
+  {
+  "success": true,
+  "data": [
+  { "month": "2026-05", "count": 8 },
+  { "month": "2026-06", "count": 12 },
+  { "month": "2026-07", "count": 5 }
+  ]
+  }
+
+---
+
+### 4. Get Accepted Rate
+
+Mendapatkan persentase rasio kelulusan pelamar yang dihitung dari total lamaran berstatus `ACCEPTED` dibandingkan keseluruhan lamaran kerja (hasil dibulatkan ke angka terdekat).
+
+- **Endpoint:** `GET /api/dashboard/analytics/accepted-rate`
+- **Headers:**
+
+  Authorization: Bearer <jwt_token>
+
+- **Response (200 OK):**
+  json
+  {
+  "success": true,
+  "data": {
+  "ACCEPTED": 4
+  }
+  }
+
+---
+
+### 5. Get Dashboard Overview
+
+Menggabungkan data dari ketiga fungsi analitik di atas ke dalam satu respons objek tunggal untuk optimasi pemuatan halaman utama (_homepage dashboard_).
+
+- **Endpoint:** `GET /api/dashboard/analytics/overview`
+- **Headers:**
+
+  Authorization: Bearer <jwt_token>
+
+- **Response (200 OK):**
+  json
+  {
+  "success": true,
+  "data": {
+  "totalApplications": 25,
+  "statusStats": {
+  "total": 25,
+  "APPLIED": 10,
+  "SCREENING": 5,
+  "INTERVIEW": 4,
+  "OFFER": 2,
+  "REJECTED": 3,
+  "ACCEPTED": 1
+  },
+  "monthlyStats": [
+  { "month": "2026-05", "count": 8 },
+  { "month": "2026-06", "count": 12 },
+  { "month": "2026-07", "count": 5 }
+  ],
+  "ACCEPTED": 4
+  }
+  }
+
+---
+
+### Error Responses (Penanganan Masalah)
+
+- **401 Unauthorized (Token Kosong / Kedaluwarsa)**
+
+  json
+  {
+  "success": false,
+  "message": "Unauthorized access. Token is missing or invalid."
+  }
+
+- **429 Too Many Requests (Batas Request Terlampaui)**
+
+  json
+  {
+  "success": false,
+  "message": "Too many requests, please try again later."
+  }
+
+- **500 Internal Server Error (Kendala Basis Data / Server)**
+  json
+  {
+  "success": false,
+  "message": "Internal server error."
+  }
