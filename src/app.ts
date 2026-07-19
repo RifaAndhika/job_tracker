@@ -1,4 +1,5 @@
 import express from "express";
+import helmet from "helmet";
 import { requestLogger } from "./middleware/requestLogger";
 import cors from "cors";
 import { globalLimiter } from "./middleware/rateLimiter";
@@ -9,6 +10,8 @@ import { errorMiddleware } from "./middleware/error.middleware";
 import { authStore } from "./middleware/rateLimiter";
 
 const app = express();
+app.use(helmet());
+app.disable("x-powered-by");
 app.use(requestLogger);
 app.use(cors());
 app.use(express.json());
