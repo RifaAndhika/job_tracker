@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { JobQueryType, CreateJobInput, UpdateJobInput } from "./job.schema";
 import { AppError } from "../../utils/appError";
+import { invalidateCache, dashboardCacheKey } from "../../utils/cache";
 
 export const getJobService = async (userId: string, query: JobQueryType) => {
   const { status, search, page, limit, sort, sortBy } = query;
@@ -39,7 +40,7 @@ export const createJobService = async (
   userId: string,
   data: CreateJobInput,
 ) => {
-  return prisma.jobApplication.create({
+  const job = await prisma.jobApplication.create({
     data: {
       userId,
       companyName: data.companyName,
@@ -50,6 +51,8 @@ export const createJobService = async (
       ...(data.notes !== undefined && { notes: data.notes }),
     },
   });
+  await invalidateCache(dashboardCacheKey(userId));
+  return job;
 };
 
 export const getJobByIdService = async (jobId: string, userId: string) => {
@@ -75,7 +78,7 @@ export const updateJobService = async (
   if (!existingJob) {
     throw new AppError("Job application not found", 404);
   }
-  return prisma.jobApplication.update({
+  const job = await prisma.jobApplication.update({
     where: { id: jobId },
     data: {
       companyName: data.companyName,
@@ -86,6 +89,9 @@ export const updateJobService = async (
       ...(data.notes !== undefined && { notes: data.notes }),
     },
   });
+
+  await invalidateCache(dashboardCacheKey(userId));
+  return job;
 };
 
 export const deleteJobService = async (userId: string, jobId: string) => {
@@ -97,9 +103,16 @@ export const deleteJobService = async (userId: string, jobId: string) => {
     throw new AppError("Job application not found", 404);
   }
 
-  return prisma.jobApplication.delete({
+  const job = await prisma.jobApplication.delete({
     where: {
       id: jobId,
     },
   });
+
+  await invalidateCache(dashboardCacheKey(userId));
+  return job;
 };
+
+// # Test cache hit
+// curl http://localhost:3000/api/dashboard/analytics/overview \
+//   -H "Authorization: Bearer <token>"

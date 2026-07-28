@@ -3,25 +3,32 @@ version: "3.9"
 services:
   # ── Service 1: Backend Node.js ──────────────────────
   backend:
-    build: .                      # Build dari Dockerfile di folder ini
+    build: . # Build dari Dockerfile di folder ini
     ports:
-      - "3000:3000"               # host:container — akses via localhost:3000
+      - "3000:3000" # host:container — akses via localhost:3000
     env_file:
       - .env
       #                                               ^^
       #                       "db" = nama service postgres di bawah
     depends_on:
-      - db                        # Tunggu db siap sebelum backend start
-    restart: unless-stopped       # Auto-restart jika crash
+      - db # Tunggu db siap sebelum backend start
+    restart: unless-stopped # Auto-restart jika crash
 
   # ── Service 2: PostgreSQL ────────────────────────────
   db:
-    image: postgres:15            # Pakai image resmi, tidak perlu Dockerfile
+    image: postgres:15 # Pakai image resmi, tidak perlu Dockerfile
     env_file:
       - .env
     volumes:
-      - pgdata:/var/lib/postgresql/data   # Data persisten (tidak hilang saat container restart)
+      - pgdata:/var/lib/postgresql/data # Data persisten (tidak hilang saat container restart)
     restart: unless-stopped
+
+  # ── Service 3: Redis ────────────────────────────
+  redis:
+    image: redis:7-alpine # Pakai image resmi
+    ports:
+      - "6379:6379" # host:container — akses via localhost:6379
+    restart: unless-stopped #auto restart jika crash
 
 # Deklarasi named volume untuk data postgres
 volumes:

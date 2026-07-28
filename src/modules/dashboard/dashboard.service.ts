@@ -1,7 +1,7 @@
-import {prisma} from "../../config/prisma";
+import { prisma } from "../../config/prisma";
+import { getCached, setCache, dashboardCacheKey } from "../../utils/cache";
 
 export const totalApplicationsService = async (userid: string) => {
-
   const total = await prisma.jobApplication.count({
     where: {
       userId: userid,
@@ -30,7 +30,7 @@ export const totalApplicationsByStatusService = async (userid: string) => {
     REJECTED: 0,
     ACCEPTED: 0,
   };
-  grouped.forEach((item:any) => {
+  grouped.forEach((item: any) => {
     analytics.total += item._count.status;
     switch (item.status) {
       case "APPLIED":
@@ -72,7 +72,7 @@ export const totalApplicationsMonthlyService = async (userid: string) => {
   ORDER BY month ASC
   `;
 
-  return grouped.map((item:any) => ({
+  return grouped.map((item: any) => ({
     month: item.month,
     count: Number(item.count),
   }));
@@ -97,6 +97,13 @@ export const getAcceptedRateService = async (userId: string) => {
 };
 
 export const getDashboardOverviewService = async (userId: string) => {
+  const cachedKey = dashboardCacheKey(userId);
+  const cached = await getCached(cachedKey);
+  if (cached) {
+    return cached; //cache hit -> not query db
+  }
+
+  //cache miss → query db
   const [totalApplications, statusStats, monthlyStats, acceptedRate] =
     await Promise.all([
       totalApplicationsService(userId),
@@ -105,10 +112,10 @@ export const getDashboardOverviewService = async (userId: string) => {
       getAcceptedRateService(userId),
     ]);
 
-  return {
-    totalApplications,
-    statusStats,
-    monthlyStats,
-    acceptedRate,
-  };
+  const data = { totalApplications, statusStats, monthlyStats, acceptedRate };
+
+  //set cache
+  await setCache(cachedKey, data);
+
+  return data;
 };
