@@ -1,5 +1,6 @@
 import { mockDeep, mockReset } from "vitest-mock-extended";
 import { PrismaClient } from "@prisma/client";
+import * as cache from "../../utils/cache";
 
 // Buat instance mock SATU KALI di sini
 export const prismaMock = mockDeep<PrismaClient>();
@@ -11,4 +12,6 @@ vi.mock("../../config/prisma", () => ({
 
 beforeEach(() => {
   mockReset(prismaMock);
+  vi.spyOn(cache, "getCached").mockResolvedValue(null);
+  vi.spyOn(cache, "setCache").mockResolvedValue();
 });

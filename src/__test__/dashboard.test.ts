@@ -5,6 +5,7 @@ import { generateAccessToken } from "../utils/jwtUtils";
 import * as service from "../modules/dashboard/dashboard.service";
 import { prisma } from "../config/prisma";
 import { Mock } from "vitest";
+import * as cache from "../utils/cache";
 
 const request = supertest(app);
 
@@ -219,29 +220,29 @@ describe("GET /api/dashboard/analytics/accepted-rate", () => {
 });
 
 describe("GET /api/dashboard/analytics/overview", () => {
+  beforeEach(() => {
+    // Mock cache supaya tidak connect ke Redis
+    vi.spyOn(cache, "getCached").mockResolvedValue(null);
+    vi.spyOn(cache, "setCache").mockResolvedValue();
+  });
+
   it("should get job applications overview", async () => {
     const token = generateAccessToken({
       id: "4101880a-ba2a-47e2-9ff7-8961686c6f00",
       email: "user@example.com",
     });
 
-    // count dipanggil 3x total, harus diisi 3 kali berurutan:
-    // ke-1: totalApplicationsService → total semua job
-    // ke-2: getAcceptedRateService → total (lagi, untuk hitung rate)
-    // ke-3: getAcceptedRateService → accepted
     prismaMock.jobApplication.count
       .mockResolvedValueOnce(20) // totalApplications
-      .mockResolvedValueOnce(20) // total (dalam acceptedRate)
-      .mockResolvedValueOnce(5); // accepted (dalam acceptedRate)
+      .mockResolvedValueOnce(20) // total (acceptedRate)
+      .mockResolvedValueOnce(5); // accepted (acceptedRate)
 
-    // groupBy dipanggil 1x → totalApplicationsByStatusService
-    (prismaMock.jobApplication.groupBy as any).mockResolvedValue([
+    (prismaMock.jobApplication.groupBy as unknown as Mock).mockResolvedValue([
       { status: "APPLIED", _count: { status: 15 } },
       { status: "ACCEPTED", _count: { status: 5 } },
     ]);
 
-    // $queryRaw dipanggil 1x → totalApplicationsMonthlyService
-    prismaMock.$queryRaw.mockResolvedValue([
+    (prismaMock.$queryRaw as unknown as Mock).mockResolvedValue([
       { month: "2026-05", count: 12 },
       { month: "2026-06", count: 8 },
     ]);
@@ -252,7 +253,6 @@ describe("GET /api/dashboard/analytics/overview", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-
     expect(res.body.data).toEqual({
       totalApplications: 20,
       statusStats: {
@@ -268,7 +268,7 @@ describe("GET /api/dashboard/analytics/overview", () => {
         { month: "2026-05", count: 12 },
         { month: "2026-06", count: 8 },
       ],
-      acceptedRate: 25, // (5/20)*100
+      acceptedRate: 25,
     });
   });
 });
