@@ -7,7 +7,6 @@ import authRoute from "./modules/auth/auth.route";
 import jobRoute from "./modules/job/job.route";
 import dashboardRoute from "./modules/dashboard/dashboard.route";
 import { errorMiddleware } from "./middleware/error.middleware";
-import { authStore } from "./middleware/rateLimiter";
 
 const app = express();
 app.use(helmet());
