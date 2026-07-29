@@ -1,8 +1,19 @@
 import supertest from "supertest";
+import { vi } from "vitest";
 import app from "../app";
 import { prismaMock } from "./helpers/prismaMock";
 import { generateAccessToken } from "../utils/jwtUtils";
 import { ApplicationStatus } from "@prisma/client";
+
+// ⬇️ FIX UTAMA: mock cache util supaya invalidateCache tidak benar-benar
+// mencoba konek ke Redis/resource eksternal saat test berjalan.
+// Sesuaikan path "../utils/cache" kalau lokasi file cache-mu berbeda
+// relatif terhadap file test ini (service kamu import dari "../../utils/cache",
+// sedangkan test ini ada satu level lebih dalam di __test__/, jadi jadi "../utils/cache").
+vi.mock("../utils/cache", () => ({
+  invalidateCache: vi.fn().mockResolvedValue(undefined),
+  dashboardCacheKey: vi.fn((userId: string) => `dashboard:${userId}`),
+}));
 
 const request = supertest(app);
 
@@ -22,7 +33,7 @@ describe("GET /api/jobs/get", () => {
         userId: userId,
         companyName: "PT Maju",
         position: "Backend Developer",
-        status: ApplicationStatus.APPLIED, // bukan string "APPLIED"
+        status: ApplicationStatus.APPLIED,
         appliedDate: new Date(),
         source: null,
         notes: null,
@@ -34,11 +45,9 @@ describe("GET /api/jobs/get", () => {
     prismaMock.jobApplication.findMany.mockResolvedValue(mockJobs);
     prismaMock.jobApplication.count.mockResolvedValue(1);
 
-    // $transaction versi array: Prisma jalankan semua promise di array lalu return array hasilnya
-    // Kita simulasikan perilaku itu di mock:
     (prismaMock.$transaction as any).mockImplementation((arg: any) => {
       if (Array.isArray(arg)) return Promise.all(arg);
-      return arg(prismaMock); // jaga-jaga kalau ada pemanggilan $transaction versi callback di tempat lain
+      return arg(prismaMock);
     });
 
     const res = await request
@@ -72,7 +81,7 @@ describe("GET /api/jobs/get", () => {
       .get("/api/jobs/get")
       .set("Authorization", `Bearer ${token}`);
 
-    expect(res.status).toBe(200); // BUKAN 500 — kamu sendiri yang nulis expect 500 di test asalnya, itu salah
+    expect(res.status).toBe(200);
     expect(res.body.data).toEqual([]);
   });
 
@@ -84,7 +93,7 @@ describe("GET /api/jobs/get", () => {
     const res = await request
       .get("/api/jobs/get")
       .set("Authorization", `Bearer ${token}`)
-      .query({ page: -1, limit: 999, sort: "INVALID" }); // invalid values
+      .query({ page: -1, limit: 999, sort: "INVALID" });
     expect(res.status).toBe(400);
     expect(res.body).toEqual(
       expect.objectContaining({
@@ -147,12 +156,11 @@ describe("POST /api/jobs/create", () => {
     const res = await request
       .post("/api/jobs/create")
       .set("Authorization", `Bearer ${token}`)
-      .send({ position: "Backend Developer" }); // companyName hilang
+      .send({ position: "Backend Developer" });
 
     expect(res.status).toBe(400);
   });
 
-  //validate middleware
   it("should return 400 if request body is invalid", async () => {
     const token = generateAccessToken({
       id: userId,
@@ -161,7 +169,7 @@ describe("POST /api/jobs/create", () => {
     const res = await request
       .post("/api/jobs/create")
       .set("Authorization", `Bearer ${token}`)
-      .send({ position: "Backend Developer", status: "INVALID_STATUS" }); // invalid status
+      .send({ position: "Backend Developer", status: "INVALID_STATUS" });
     expect(res.status).toBe(400);
     expect(res.body).toEqual(
       expect.objectContaining({
@@ -185,7 +193,7 @@ describe("GET /api/jobs/:id", () => {
 
     prismaMock.jobApplication.findFirst.mockResolvedValue({
       id: "06dc488a-d4ac-4e53-bfd1-6b34645d94b7",
-      userId: userId, // ← samakan dengan token, bukan "user-123" asal
+      userId: userId,
       companyName: "PT Maju",
       position: "Backend Developer",
       status: "APPLIED",
@@ -201,8 +209,6 @@ describe("GET /api/jobs/:id", () => {
       .set("Authorization", `Bearer ${token}`);
 
     expect(res.status).toBe(200);
-
-    // INI YANG HILANG: verifikasi Prisma dipanggil dengan filter userId yang benar
     expect(prismaMock.jobApplication.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ userId }),
@@ -241,7 +247,7 @@ describe("PUT /api/jobs/:id", () => {
       userId: userId,
       companyName: "PT Maju",
       position: "Backend Developer",
-      status: ApplicationStatus.APPLIED, // bukan string "APPLIED"
+      status: ApplicationStatus.APPLIED,
       appliedDate: new Date(),
       source: null,
       notes: null,
@@ -249,7 +255,6 @@ describe("PUT /api/jobs/:id", () => {
       updatedAt: new Date(),
     };
 
-    // WAJIB di-mock sekarang, karena service cek findFirst dulu sebelum update
     prismaMock.jobApplication.findFirst.mockResolvedValue(job);
 
     prismaMock.jobApplication.update.mockResolvedValue({
@@ -297,7 +302,6 @@ describe("PUT /api/jobs/:id", () => {
     expect(res.status).toBe(404);
   });
 
-  // 3. Update dengan field invalid → 400
   it("should return 400 if update data is invalid", async () => {
     const token = generateAccessToken({
       id: userId,
@@ -354,7 +358,6 @@ describe("DELETE /api/jobs/:id", () => {
     });
 
     prismaMock.jobApplication.findFirst.mockResolvedValue(null);
-    // atau sesuaikan dengan cara route kamu handle not-found — cek dulu implementasinya
 
     const res = await request
       .delete("/api/jobs/job-tidak-ada")
